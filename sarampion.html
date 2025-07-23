@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Aventura de Vacunación: ¡Misión Salud!</title>
+    <meta name="description" content="¡Únete a la Monita Sara en una divertida aventura para aprender sobre la vacunación contra el sarampión! Juega minijuegos, recupera las vacunas y conviértete en un Héroe de la Salud.">
+    <meta name="keywords" content="juego educativo, sarampión, vacunación, niños, primaria, aprender jugando, salud infantil">
+    <meta property="og:title" content="Aventura de Vacunación: ¡Misión Salud!">
+    <meta property="og:description" content="Un juego interactivo para que los niños de 1ro a 3ro de primaria aprendan la importancia de vacunarse contra el sarampión de forma divertida.">
+    <meta property="og:image" content="https://i.imgur.com/2nZ3T5b.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="#">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* Paleta de colores y fuentes temáticas */
+        :root {
+            --bg-main: #E0F7FA; /* Azul cielo muy claro */
+            --primary: #00ACC1; /* Cian */
+            --secondary: #FFC107; /* Ámbar */
+            --accent: #4CAF50; /* Verde Salud */
+            --text-dark: #004D40; /* Verde azulado oscuro */
+            --white: #FFFFFF;
+            --danger: #F44336; /* Rojo para errores */
+            --success: #8BC34A; /* Verde claro para aciertos */
+            --parchment: #FFF8E1; /* Color pergamino para la lámina */
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            overflow: hidden; /* Evita el scroll en la página principal */
+        }
+
+        /* Estilos para las escenas y transiciones */
+        .scene {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .active-scene {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        /* Estilos de botones temáticos */
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--white);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 3px solid transparent;
+            cursor: pointer;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn:active:not(:disabled) { /* Efecto al presionar */
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: #00838F;
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .btn-secondary {
+            background-color: var(--secondary);
+            border-color: #FFA000;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Micro-interacciones */
+        .interactive-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        .interactive-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 172, 193, 0.3);
+        }
+        .glow-on-touch { /* CLASE PARA EL EFECTO DE BRILLO */
+            box-shadow: 0 0 20px 8px rgba(255, 193, 7, 0.8)!important;
+            transform: scale(1.05);
+        }
+        .pulse {
+            animation: pulse-animation 1.5s infinite;
+        }
+        @keyframes pulse-animation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Estilos para Drag & Drop */
+        .draggable {
+            touch-action: none; /* Mejora la experiencia en móviles */
+            cursor: grab;
+        }
+        .dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+            z-index: 1000;
+        }
+        .drop-zone {
+            border: 3px dashed var(--primary);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .drop-zone.hovered {
+            background-color: rgba(0, 172, 193, 0.1);
+        }
+        .drop-zone.correct {
+            border-style: solid;
+            border-color: var(--success);
+            background-color: rgba(139, 195, 74, 0.2);
+        }
+        .drop-zone.incorrect {
+            border-color: var(--danger);
+            background-color: rgba(244, 67, 54, 0.2);
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        /* Estilos para el juego de desfile */
+        .parade-item {
+            position: absolute;
+            animation: parade-animation 10s linear;
+            transition: filter 0.2s ease;
+        }
+        .parade-item.glow-on-touch { /* Efecto de brillo para SVGs */
+            filter: drop-shadow(0 0 10px var(--secondary));
+        }
+        @keyframes parade-animation {
+            from { transform: translateX(-150px); }
+            to { transform: translateX(100vw); }
+        }
+
+        /* Estilos para la lámina informativa */
+        #info-scroll {
+            background-color: var(--parchment);
+            border: 10px solid #A1887F; /* Borde tipo madera */
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            animation: unfurl 0.8s ease-out;
+            transform-origin: top;
+        }
+        @keyframes unfurl {
+            from { transform: scaleY(0); }
+            to { transform: scaleY(1); }
+        }
+        .info-point {
+            display: none;
+            animation: fadeInPoint 0.5s ease-in-out;
+        }
+        .info-point.active {
+            display: flex;
+        }
+        @keyframes fadeInPoint {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Estilos para el nuevo minijuego de vacunación */
+        #game6-area {
+            background: linear-gradient(to bottom, #a1c4fd, #c2e9fb);
+        }
+        .person {
+            position: absolute;
+            width: 80px;
+            height: 100px;
+            cursor: pointer;
+            transition: transform 0.2s ease, filter 0.3s ease;
+        }
+        .person:hover {
+            transform: scale(1.1);
+        }
+        .person.sick {
+            filter: sepia(1) hue-rotate(-50deg) saturate(5);
+            cursor: not-allowed;
+        }
+        .person.protected {
+            cursor: default;
+        }
+        .dose-indicator {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+            color: white;
+        }
+        .dose-1 {
+            background-color: var(--secondary);
+        }
+        .dose-2 {
+            background-color: var(--success);
+        }
+        .shield-icon {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .person.protected .shield-icon {
+            opacity: 1;
+        }
+
+    </style>
+</head>
+<body class="w-screen h-screen overflow-hidden">
+
+    <main id="game-container" class="relative w-full h-full">
+
+        <!-- Interfaz de Usuario del Juego (Barra de Progreso y Botones) -->
+        <div id="game-ui" class="absolute top-0 left-0 w-full p-4 z-10 hidden">
+            <div class="flex items-center justify-between max-w-4xl mx-auto">
+                <button id="back-btn" class="btn btn-secondary !py-2 !px-4 text-sm">Retroceder</button>
+                <div class="w-1/2 bg-gray-200 rounded-full h-6">
+                    <div id="progress-bar" class="bg-gradient-to-r from-green-400 to-blue-500 h-6 rounded-full text-center text-white font-bold transition-all duration-500" style="width: 0%;"></div>
+                </div>
+                <button id="next-btn" class="btn btn-primary !py-2 !px-4 text-sm" disabled>Avanzar</button>
+            </div>
+        </div>
+
+        <!-- Escena 1: Introducción -->
+        <section id="scene-1" class="scene active-scene flex-col items-center justify-center text-center p-8">
+            <h1 class="text-5xl md:text-7xl font-black text-[var(--primary)] mb-4">¡Misión Salud!</h1>
+            <div class="w-48 h-48 mb-4">
+                <!-- SVG Monita Sara -->
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g><path fill="#795548" d="M50 20 C 35 20, 25 35, 25 50 C 25 70, 35 80, 50 80 C 65 80, 75 70, 75 50 C 75 35, 65 20, 50 20 Z" /><path fill="#FFCCBC" d="M50 25 C 40 25, 30 35, 30 50 C 30 65, 40 75, 50 75 C 60 75, 70 65, 70 50 C 70 35, 60 25, 50 25 Z" /><path fill="#FFCCBC" d="M30 40 A 10 10 0 0 1 20 50 A 10 10 0 0 1 30 60" /><path fill="#FFCCBC" d="M70 40 A 10 10 0 0 0 80 50 A 10 10 0 0 0 70 60" /><circle fill="#000" cx="42" cy="45" r="4"/><circle fill="#000" cx="58" cy="45" r="4"/><path fill="none" stroke="#000" stroke-width="2" d="M45 60 Q 50 65, 55 60" /></g></svg>
+            </div>
+            <p class="text-xl md:text-2xl max-w-2xl mb-8">
+                ¡Hola, soy la <strong>Monita Sara</strong>! El travieso <strong>Loro Bromista</strong> ha escondido todas las vacunas y ahora el peligroso virus del sarampión anda suelto. ¡Necesito tu ayuda para recuperarlas y proteger a todos! ¿Te unes a la aventura para convertirte en un <strong>Héroe de la Salud</strong>?
+            </p>
+            <button id="start-btn" class="btn btn-primary pulse">¡Aceptar la Misión!</button>
+        </section>
+
+        <!-- Escena 2: Aprendizaje de Tarjetas -->
+        <section id="scene-2" class="scene flex-col items-center justify-center p-4 pt-24 md:pt-20">
+            <h2 class="text-3xl md:text-5xl font-bold mb-2">El Mapa Mágico del Conocimiento</h2>
+            <p class="text-lg md:text-xl mb-6 text-center">Toca cada tarjeta para aprender las palabras secretas. ¡Escúchalas todas para poder avanzar!</p>
+            <div id="learning-grid" class="grid grid-cols-3 gap-4 md:gap-6 max-w-3xl">
+                <!-- Tarjetas generadas por JS -->
+            </div>
+        </section>
+        
+        <!-- Escena 2.5: Papiro Informativo -->
+        <section id="scene-2-5" class="scene flex-col items-center justify-center p-4 pt-24 md:pt-20">
+            <div id="info-scroll" class="w-full max-w-3xl p-6 md:p-8">
+                <h2 class="text-3xl md:text-5xl font-black text-center text-amber-800 mb-6">📜 El Papiro Secreto de la Salud 📜</h2>
+                <div id="info-points-container" class="space-y-4 text-lg md:text-xl text-amber-900 min-h-[250px]">
+                    
+                    <div class="info-point flex items-center gap-4">
+                        <span class="text-5xl">🤔</span>
+                        <div>
+                            <h3 class="font-bold">¿Qué es el Sarampión?</h3>
+                            <p>Es un virus muy, muy pequeño y travieso que le gusta viajar de persona a persona y puede enfermarnos.</p>
+                        </div>
+                    </div>
+
+                    <div class="info-point flex items-center gap-4">
+                        <span class="text-5xl">💨</span>
+                        <div>
+                            <h3 class="font-bold">¿Cómo viaja?</h3>
+                            <p>¡Viaja por el aire! Cuando alguien con el virus tose o estornuda, los bichitos invisibles salen a buscar un nuevo lugar.</p>
+                        </div>
+                    </div>
+
+                    <div class="info-point flex items-center gap-4">
+                        <span class="text-5xl">🛡️</span>
+                        <div>
+                            <h3 class="font-bold">¡Nuestro Superpoder!</h3>
+                            <p>¡La vacuna es nuestro escudo protector! Nos hace superfuertes contra el virus del sarampión.</p>
+                        </div>
+                    </div>
+
+                    <div class="info-point flex items-center gap-4">
+                        <span class="text-5xl">✌️</span>
+                        <div>
+                            <h3 class="font-bold">¡Dos dosis para la victoria!</h3>
+                            <p>Para que nuestro escudo sea invencible, necesitamos dos dosis de la vacuna. ¡Una no es suficiente para ganar la batalla!</p>
+                        </div>
+                    </div>
+
+                    <div class="info-point flex items-center gap-4">
+                        <span class="text-5xl">🦸‍♀️</span>
+                        <div>
+                            <h3 class="font-bold">¡Tú eres un Héroe!</h3>
+                            <p>Al vacunarte, no solo te proteges a ti, ¡sino que también cuidas a tu familia, amigos y a todos en la comunidad!</p>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="text-center mt-8">
+                    <button id="next-info-btn" class="btn btn-secondary">Siguiente Pista ➡️</button>
+                    <button id="start-games-btn" class="btn btn-primary hidden">¡Entendido! ¡A jugar!</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Escena 3: Juego 1 - La Cueva de los Ecos -->
+        <section id="scene-3" class="scene flex-col items-center justify-center p-4 pt-24 md:pt-20 text-center">
+            <h2 class="text-3xl md:text-5xl font-bold mb-2">La Cueva de los Ecos</h2>
+            <p id="game1-instruction" class="text-lg md:text-xl mb-6">Escucha con atención y elige la imagen correcta para recuperar la primera parte de las vacunas.</p>
+            <button id="play-sound-btn" class="btn btn-secondary mb-6">Escuchar la palabra</button>
+            <div id="game1-options" class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-4xl">
+                <!-- Opciones generadas por JS -->
+            </div>
+        </section>
+
+        <!-- Escena 4: Juego 2 - El Puente de las Palabras -->
+        <section id="scene-4" class="scene flex-col items-center justify-center p-4 pt-24 md:pt-20 text-center">
+            <h2 class="text-3xl md:text-5xl font-bold mb-2">El Puente de las Palabras</h2>
+            <p class="text-lg md:text-xl mb-6">¡Casi lo logramos! Arrastra cada palabra a su dibujo correspondiente para reconstruir el puente.</p>
+            <div class="flex flex-col md:flex-row items-center justify-center gap-8 w-full max-w-4xl">
+                <div id="game2-words" class="flex flex-row md:flex-col gap-4 p-4 justify-center">
+                    <!-- Palabras arrastrables generadas por JS -->
+                </div>
+                <div id="game2-targets" class="grid grid-cols-3 md:grid-cols-1 gap-4">
+                    <!-- Zonas para soltar generadas por JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Escena 5: Juego 3 - La Jungla de los Sonidos -->
+        <section id="scene-5" class="scene flex-col items-center justify-center p-4 pt-24 md:pt-20 text-center">
+            <h2 class="text-3xl md:text-5xl font-bold mb-2">La Jungla de los Sonidos</h2>
+            <p class="text-lg md:text-xl mb-6">¡El Loro Bromista confundió los sonidos! Mira la imagen y elige el audio correcto.</p>
+            <div id="game3-image-container" class="w-48 h-48 md:w-64 md:h-64 bg-white rounded-2xl shadow-lg p-4 mb-6 flex items-center justify-center">
+                <!-- Imagen generada por JS -->
+            </div>
+            <div id="game3-audio-options" class="flex flex-col md:flex-row gap-4">
+                <!-- Opciones de audio generadas por JS -->
+            </div>
+        </section>
+
+        <!-- Escena 6: Juego 4 - El Río del Saber -->
+        <section id="scene-6" class="scene flex-col items-center justify-center p-4 pt-24 md:pt-20 text-center">
+            <h2 class="text-3xl md:text-5xl font-bold mb-2">El Río del Saber</h2>
+            <p class="text-lg md:text-xl mb-6">¡Usa lo que aprendiste! Completa la oración arrastrando la palabra correcta.</p>
+            <div id="game4-sentence-container" class="bg-white rounded-2xl shadow-lg p-6 text-2xl md:text-3xl mb-6 min-h-[80px] flex items-center justify-center flex-wrap gap-2">
+                <!-- Oración generada por JS -->
+            </div>
+            <div id="game4-word-options" class="flex flex-wrap justify-center gap-4 mt-4">
+                <!-- Opciones de palabras generadas por JS -->
+            </div>
+        </section>
+
+        <!-- Escena 7: Juego 5 - El Desfile del Loro -->
+        <section id="scene-7" class="scene flex-col items-center justify-center p-4 pt-24 md:pt-20 text-center">
+            <h2 class="text-3xl md:text-5xl font-bold mb-2">¡El Desfile del Loro!</h2>
+            <p class="text-lg md:text-xl mb-4">¡El desafío final! El Loro Bromista lanzó todo por los aires. ¡Atrapa el objeto correcto!</p>
+            <div class="bg-white/50 w-full max-w-4xl p-4 rounded-lg mb-4">
+                <p class="text-xl">Atrapa esto:</p>
+                <p id="game5-target-word" class="text-4xl font-black text-[var(--primary)]"></p>
+            </div>
+            <div id="game5-parade-area" class="w-full h-64 bg-white rounded-2xl shadow-lg relative overflow-hidden">
+                <!-- Objetos en desfile generados por JS -->
+            </div>
+        </section>
+
+        <!-- Escena 7.5: Nuevo Minijuego - Vacunación -->
+        <section id="scene-7-5" class="scene flex-col items-center justify-center p-4 pt-24 md:pt-20 text-center">
+            <h2 class="text-3xl md:text-5xl font-bold mb-2">¡La Gran Jornada de Vacunación!</h2>
+            <p class="text-lg md:text-xl mb-4">¡Aplica lo que aprendiste! Vacuna a las personas con 2 dosis para protegerlas.</p>
+            <div id="game6-status" class="flex justify-around w-full max-w-md bg-white/60 p-2 rounded-lg mb-4 text-xl">
+                <div>❤️ Protegidos: <span id="vaccinated-count" class="font-bold">0</span></div>
+                <div>🤒 Enfermos: <span id="sick-count" class="font-bold">0</span></div>
+            </div>
+            <div id="game6-area" class="w-full max-w-4xl h-96 bg-blue-200 rounded-2xl shadow-lg relative overflow-hidden">
+                <!-- Personas a vacunar generadas por JS -->
+            </div>
+            <div id="game6-message" class="mt-4 text-2xl font-bold">&nbsp;</div>
+        </section>
+
+        <!-- Escena 8: Final -->
+        <section id="scene-8" class="scene flex-col items-center justify-center text-center p-8">
+            <div class="w-48 h-48 mb-4">
+                <!-- SVG Medalla -->
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g><path fill="#FFD700" d="M50 90 C 20 90, 10 60, 10 50 C 10 20, 20 10, 50 10 C 80 10, 90 20, 90 50 C 90 60, 80 90, 50 90 Z" /><path fill="#FFC107" d="M50 85 C 25 85, 15 58, 15 50 C 15 25, 25 15, 50 15 C 75 15, 85 25, 85 50 C 85 58, 75 85, 50 85 Z" /><path fill="#4CAF50" d="M45 5 L 55 5 L 55 25 L 70 15 L 55 25 L 45 25 L 30 15 L 45 25 Z" /><path fill="#F44336" d="M20 10 L 80 10 L 80 20 L 20 20 Z" transform="rotate(45 50 50)" /><path fill="#F44336" d="M20 10 L 80 10 L 80 20 L 20 20 Z" transform="rotate(-45 50 50)" /><text x="50" y="65" font-size="20" text-anchor="middle" fill="#A67C00" font-weight="bold">1</text></g></svg>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-black text-[var(--secondary)] mb-4">¡LO LOGRAMOS!</h1>
+            <p class="text-xl md:text-2xl max-w-2xl mb-8">
+                ¡Felicidades, <strong>Héroe de la Salud</strong>! Gracias a ti, recuperamos todas las vacunas y todos están a salvo del sarampión. ¡Eres increíble!
+            </p>
+            <button id="restart-btn" class="btn btn-primary">Jugar de Nuevo</button>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- DEFINICIÓN DE DATOS Y SVGs ---
+
+            const vocabulary = [
+                { id: 'vacuna', name: 'Vacuna', group: 1, sentence: 'La ___ nos protege de enfermedades.' },
+                { id: 'sarampion', name: 'Sarampión', group: 1, sentence: 'El ___ es un virus travieso.' },
+                { id: 'brazo', name: 'Brazo', group: 1, sentence: 'La vacuna se pone en el ___.' },
+                { id: 'doctor', name: 'Doctor', group: 2, sentence: 'El ___ nos ayuda a estar sanos.' },
+                { id: 'jeringa', name: 'Jeringa', group: 2, sentence: 'Usan una ___ para poner la vacuna.' },
+                { id: 'salud', name: 'Salud', group: 2, sentence: 'Vacunarse es bueno para la ___.' },
+                { id: 'proteger', name: 'Proteger', group: 3, sentence: 'Debemos ___ a nuestra familia.' },
+                { id: 'fuerte', name: 'Fuerte', group: 3, sentence: 'La vacuna nos hace más ___.' },
+                { id: 'prevenir', name: 'Prevenir', group: 3, sentence: 'Es mejor ___ que curar.' }
+            ];
+
+            const svgs = {
+                vacuna: `<svg viewBox="0 0 100 100"><path fill="#B2EBF2" d="M40 20h20v50h-20z"/><path fill="#4DD0E1" d="M35 70h30v10h-30z"/><path fill="#00ACC1" d="M40 10h20v10h-20z"/><rect x="45" y="25" width="10" height="40" fill="#FFFFFF" opacity="0.5"/></svg>`,
+                sarampion: `<svg viewBox="0 0 100 100"><circle fill="#F44336" cx="50" cy="50" r="30"/><circle fill="#FFCDD2" cx="40" cy="40" r="5"/><circle fill="#FFCDD2" cx="60" cy="40" r="5"/><circle fill="#FFCDD2" cx="50" cy="60" r="5"/><path stroke="#C62828" stroke-width="3" d="M50 20v-10 m15 5 l10-10 m20 20 h10 m15 15 l10 10 m0 20 v10 m-5 15 l-10 10 m-20 20 h-10 m-15 15 l-10-10 m-20 0 v-10 m-15-5 l-10-10 m-20-20 h-10 m-15-15 l-10-10"/></svg>`,
+                brazo: `<svg viewBox="0 0 100 100"><path fill="#FFCCBC" d="M60 20 Q 80 50, 60 80 L 40 80 Q 20 50, 40 20 Z"/><path fill="#E6A485" d="M50 30 A 15 20 0 0 1 50 70"/></svg>`,
+                doctor: `<svg viewBox="0 0 100 100"><circle fill="#B2EBF2" cx="50" cy="30" r="20"/><path fill="#FFFFFF" d="M30 50h40v40H30z"/><path fill="#78909C" d="M20 70h10v-30h-10z"/><path fill="#78909C" d="M70 70h10v-30h-10z"/><path fill="#F44336" d="M45 60h10v10h-10z"/><path fill="#FFFFFF" d="M48 55h4v20h-4z"/><path fill="#FFFFFF" d="M40 70h20v4h-20z"/></svg>`,
+                jeringa: `<svg viewBox="0 0 100 100"><path fill="#BDBDBD" d="M20 40h50v20H20z" transform="rotate(-45 50 50)"/><path fill="#9E9E9E" d="M65 35h20v30H65z" transform="rotate(-45 50 50)"/><path fill="#42A5F5" d="M25 45h40v10H25z" transform="rotate(-45 50 50)"/><path fill="#616161" d="M10 48h10v4h-10z" transform="rotate(-45 50 50)"/></svg>`,
+                salud: `<svg viewBox="0 0 100 100"><path fill="#4CAF50" d="M50 20 L 90 50 L 50 80 L 10 50 Z"/><path fill="#FFFFFF" d="M45 35h10v30h-10z"/><path fill="#FFFFFF" d="M35 45h30v10h-30z"/></svg>`,
+                proteger: `<svg viewBox="0 0 100 100"><path fill="#2196F3" d="M50 10 L90 30 L90 70 Q50 90, 10 70 L10 30 Z"/><path fill="#FFFFFF" d="M50 20 L80 40 L80 65 Q50 80, 20 65 L20 40 Z" opacity="0.8"/></svg>`,
+                fuerte: `<svg viewBox="0 0 100 100"><path fill="#FFC107" d="M30 80 L 70 80 L 70 70 C 70 50, 80 40, 60 30 C 40 20, 30 40, 30 60 Z"/><circle fill="#FBC02D" cx="50" cy="45" r="15"/></svg>`,
+                prevenir: `<svg viewBox="0 0 100 100"><path fill="#F44336" d="M50 10 L90 30 L90 70 L50 90 L10 70 L10 30 Z"/><rect x="25" y="45" width="50" height="10" fill="white"/></svg>`,
+                loro: `<svg viewBox="0 0 100 100"><path fill="#4CAF50" d="M30 90 C 10 70, 10 30, 40 20 C 70 10, 90 30, 80 60 L 60 90 Z"/><path fill="#F44336" d="M40 20 C 50 10, 60 15, 60 25 C 60 35, 50 40, 40 30 Z"/><circle fill="#000" cx="50" cy="30" r="5"/><path fill="#FFEB3B" d="M35 40 C 30 50, 40 60, 45 55 Z"/></svg>`,
+                person: `<svg viewBox="0 0 80 100"><circle cx="40" cy="20" r="15" fill="#FFCCBC"/><rect x="20" y="35" width="40" height="50" rx="10" fill="#81D4FA"/><rect x="25" y="85" width="30" height="15" fill="#5D4037"/></svg>`,
+                shield: `<svg viewBox="0 0 100 100"><path d="M50 10 L90 30 L90 70 Q50 90 10 70 L10 30 Z" fill="#4CAF50"/><path d="M40 45 L50 55 L70 35" stroke="white" stroke-width="10" fill="none" stroke-linecap="round"/></svg>`
+            };
+
+            // --- ESTADO Y NAVEGACIÓN DEL JUEGO ---
+            const sceneOrder = [1, 2, 2.5, 3, 4, 5, 6, 7, 7.5, 8];
+            let gameState = {};
+            let game6Interval;
+
+            function resetGameState() {
+                clearInterval(game6Interval);
+                gameState = {
+                    currentSceneIndex: 0,
+                    learnedWords: new Set(),
+                    progress: 0,
+                    totalConcepts: vocabulary.length,
+                    infoSlide: {
+                        points: null,
+                        currentIndex: 0
+                    },
+                    game1: { words: vocabulary.filter(v => v.group === 1).sort(() => 0.5 - Math.random()), currentIndex: 0, correctWord: null },
+                    game2: { words: vocabulary.filter(v => v.group === 2), correctlyPlaced: 0 },
+                    game3: { words: vocabulary.filter(v => v.group === 3).sort(() => 0.5 - Math.random()), currentIndex: 0, correctWord: null },
+                    game4: { sentences: vocabulary.filter(v => v.sentence).sort(() => 0.5 - Math.random()), currentIndex: 0, correctWord: null },
+                    game5: { words: [...vocabulary].sort(() => 0.5 - Math.random()), currentIndex: 0, correctWord: null, speed: 10000 },
+                    game6: { vaccinated: 0, sick: 0, maxSick: 5, targetVaccinated: 10, isOver: false }
+                };
+            }
+
+            // --- REFERENCIAS AL DOM ---
+            const scenes = document.querySelectorAll('.scene');
+            const gameUi = document.getElementById('game-ui');
+            const progressBar = document.getElementById('progress-bar');
+            const nextBtn = document.getElementById('next-btn');
+            const backBtn = document.getElementById('back-btn');
+            const startBtn = document.getElementById('start-btn');
+            const restartBtn = document.getElementById('restart-btn');
+
+            // --- FUNCIONES PRINCIPALES ---
+            function showScene(sceneIndex) {
+                gameState.currentSceneIndex = sceneIndex;
+                const sceneNumber = sceneOrder[sceneIndex];
+                
+                scenes.forEach(scene => scene.classList.remove('active-scene'));
+                const sceneId = `scene-${String(sceneNumber).replace('.', '-')}`;
+                document.getElementById(sceneId).classList.add('active-scene');
+
+                if (sceneNumber > 1 && sceneNumber < 8) {
+                    gameUi.style.display = 'block';
+                } else {
+                    gameUi.style.display = 'none';
+                }
+
+                backBtn.disabled = (sceneNumber === 2);
+
+                switch (sceneNumber) {
+                    case 2: initScene2(); break;
+                    case 2.5: initScene2_5(); break;
+                    case 3: initScene3(); break;
+                    case 4: initScene4(); break;
+                    case 5: initScene5(); break;
+                    case 6: initScene6(); break;
+                    case 7: initScene7(); break;
+                    case 7.5: initScene7_5(); break;
+                    case 8: initScene8(); break;
+                }
+            }
+
+            function speak(text) {
+                if (!window.speechSynthesis) return;
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            }
+
+            function updateProgressBar() {
+                const percentage = (gameState.progress / gameState.totalConcepts) * 100;
+                progressBar.style.width = `${percentage}%`;
+                progressBar.textContent = `${Math.round(percentage)}%`;
+            }
+            
+            function completeConcept(wordId) {
+                if (!gameState.learnedWords.has(wordId)) {
+                    gameState.learnedWords.add(wordId);
+                    gameState.progress++;
+                    updateProgressBar();
+                }
+            }
+            
+            function addTouchGlow(element) {
+                element.addEventListener('touchstart', () => element.classList.add('glow-on-touch'), { passive: true });
+                element.addEventListener('touchend', () => element.classList.remove('glow-on-touch'));
+                element.addEventListener('touchcancel', () => element.classList.remove('glow-on-touch'));
+            }
+
+            // --- LÓGICA DE LAS ESCENAS ---
+
+            function initScene2() {
+                speak("¡Hola! Toca cada tarjeta para aprender las palabras secretas.");
+                const grid = document.getElementById('learning-grid');
+                grid.innerHTML = '';
+                let clickedWords = new Set();
+                nextBtn.disabled = true;
+
+                vocabulary.forEach(word => {
+                    const card = document.createElement('div');
+                    card.className = 'interactive-card bg-white rounded-2xl shadow-lg p-4 flex flex-col items-center justify-center aspect-square';
+                    card.innerHTML = `<div class="w-24 h-24 mb-2 pointer-events-none">${svgs[word.id]}</div><p class="text-xl font-bold pointer-events-none">${word.name}</p>`;
+                    addTouchGlow(card);
+                    card.addEventListener('click', () => {
+                        speak(word.name);
+                        if (!clickedWords.has(word.id)) {
+                             clickedWords.add(word.id);
+                             card.style.border = '4px solid var(--accent)';
+                        }
+                        if (clickedWords.size === vocabulary.length) {
+                            nextBtn.disabled = false;
+                            nextBtn.classList.add('pulse');
+                            speak("¡Muy bien! ¡Has aprendido todas las palabras! Pulsa avanzar.");
+                        }
+                    });
+                    grid.appendChild(card);
+                });
+            }
+
+            function initScene2_5() {
+                speak("¡Excelente! Antes de empezar, mira este Papiro Secreto que encontré.");
+                nextBtn.disabled = true;
+                const infoPoints = document.querySelectorAll('#info-points-container .info-point');
+                const nextInfoBtn = document.getElementById('next-info-btn');
+                const startGamesBtn = document.getElementById('start-games-btn');
+                
+                gameState.infoSlide.points = infoPoints;
+                gameState.infoSlide.currentIndex = 0;
+
+                infoPoints.forEach(p => p.classList.remove('active'));
+                const firstPoint = gameState.infoSlide.points[0];
+                firstPoint.classList.add('active');
+                speak(firstPoint.querySelector('p').textContent);
+
+                nextInfoBtn.classList.remove('hidden');
+                startGamesBtn.classList.add('hidden');
+
+                nextInfoBtn.onclick = () => {
+                    const currentPoint = gameState.infoSlide.points[gameState.infoSlide.currentIndex];
+                    currentPoint.classList.remove('active');
+                    
+                    gameState.infoSlide.currentIndex++;
+                    
+                    if (gameState.infoSlide.currentIndex < gameState.infoSlide.points.length) {
+                        const nextPoint = gameState.infoSlide.points[gameState.infoSlide.currentIndex];
+                        nextPoint.classList.add('active');
+                        speak(nextPoint.querySelector('p').textContent);
+                    } else {
+                        nextInfoBtn.classList.add('hidden');
+                        startGamesBtn.classList.remove('hidden');
+                        startGamesBtn.classList.add('pulse');
+                        speak("¡Ahora sí! ¡Estamos listos para la aventura!");
+                    }
+                };
+
+                startGamesBtn.onclick = () => showScene(sceneOrder.indexOf(3));
+            }
+
+            function initScene3() {
+                gameState.game1.currentIndex = 0;
+                nextBtn.disabled = true;
+                speak("Estamos en la Cueva de los Ecos. Escucha bien y encuentra la imagen correcta.");
+                setupGame1();
+            }
+
+            function setupGame1() {
+                if (gameState.game1.currentIndex >= gameState.game1.words.length) {
+                    speak("¡Genial! Recuperaste la primera parte.");
+                    nextBtn.disabled = false;
+                    nextBtn.classList.add('pulse');
+                    return;
+                }
+                
+                const correctWord = gameState.game1.words[gameState.game1.currentIndex];
+                gameState.game1.correctWord = correctWord;
+                
+                document.getElementById('game1-instruction').textContent = `Encuentra la imagen de: "${correctWord.name}"`;
+                const playSoundBtn = document.getElementById('play-sound-btn');
+                playSoundBtn.onclick = () => speak(correctWord.name);
+
+                const optionsContainer = document.getElementById('game1-options');
+                optionsContainer.innerHTML = '';
+
+                let otherWords = vocabulary.filter(v => v.id !== correctWord.id);
+                const wrongOption1 = otherWords.splice(Math.floor(Math.random() * otherWords.length), 1)[0];
+                const wrongOption2 = otherWords.splice(Math.floor(Math.random() * otherWords.length), 1)[0];
+                
+                const options = [correctWord, wrongOption1, wrongOption2].sort(() => 0.5 - Math.random());
+
+                options.forEach(word => {
+                    const optionCard = document.createElement('div');
+                    optionCard.className = 'interactive-card bg-white rounded-2xl shadow-lg p-4 flex items-center justify-center aspect-square';
+                    optionCard.innerHTML = `<div class="w-32 h-32 pointer-events-none">${svgs[word.id]}</div>`;
+                    optionCard.dataset.wordId = word.id;
+                    addTouchGlow(optionCard);
+                    optionCard.addEventListener('click', handleGame1Answer);
+                    optionsContainer.appendChild(optionCard);
+                });
+                
+                setTimeout(() => speak(correctWord.name), 1000);
+            }
+
+            function handleGame1Answer(event) {
+                const selectedCard = event.currentTarget;
+                const selectedId = selectedCard.dataset.wordId;
+                const correctId = gameState.game1.correctWord.id;
+
+                document.querySelectorAll('#game1-options > div').forEach(el => el.style.pointerEvents = 'none');
+
+                if (selectedId === correctId) {
+                    speak("¡Correcto!");
+                    selectedCard.style.border = '5px solid var(--success)';
+                    completeConcept(correctId);
+                    gameState.game1.currentIndex++;
+                    setTimeout(setupGame1, 1500);
+                } else {
+                    speak("Oh, oh. Inténtalo de nuevo.");
+                    selectedCard.classList.add('incorrect');
+                    setTimeout(() => {
+                        selectedCard.classList.remove('incorrect');
+                        document.querySelectorAll('#game1-options > div').forEach(el => el.style.pointerEvents = 'auto');
+                    }, 1000);
+                }
+            }
+
+            function initScene4() {
+                gameState.game2.correctlyPlaced = 0;
+                nextBtn.disabled = true;
+                speak("Ayúdame a construir el Puente de las Palabras. Arrastra cada palabra a su dibujo.");
+                
+                const wordsContainer = document.getElementById('game2-words');
+                const targetsContainer = document.getElementById('game2-targets');
+                wordsContainer.innerHTML = '';
+                targetsContainer.innerHTML = '';
+
+                const wordsToPlace = [...gameState.game2.words].sort(() => 0.5 - Math.random());
+                const targetsToPlace = [...gameState.game2.words].sort(() => 0.5 - Math.random());
+
+                wordsToPlace.forEach(word => {
+                    const wordEl = document.createElement('div');
+                    wordEl.id = `drag-${word.id}`;
+                    wordEl.className = 'draggable bg-[var(--secondary)] text-amber-900 p-4 rounded-full shadow-md text-xl font-bold';
+                    wordEl.textContent = word.name;
+                    wordEl.draggable = true;
+                    wordsContainer.appendChild(wordEl);
+                });
+                
+                targetsToPlace.forEach(word => {
+                    const targetEl = document.createElement('div');
+                    targetEl.id = `drop-${word.id}`;
+                    targetEl.className = 'drop-zone w-40 h-40 bg-white rounded-2xl shadow-lg p-2 flex items-center justify-center';
+                    targetEl.dataset.targetId = word.id;
+                    targetEl.innerHTML = `<div class="w-24 h-24 pointer-events-none">${svgs[word.id]}</div>`;
+                    targetsContainer.appendChild(targetEl);
+                });
+                
+                addDragAndDropListeners();
+            }
+
+            function addDragAndDropListeners() {
+                const draggables = document.querySelectorAll('.draggable');
+                const dropZones = document.querySelectorAll('.drop-zone');
+                let draggedItem = null;
+
+                draggables.forEach(draggable => {
+                    draggable.addEventListener('dragstart', (e) => {
+                        draggedItem = e.target;
+                        setTimeout(() => e.target.classList.add('dragging'), 0);
+                    });
+
+                    draggable.addEventListener('dragend', () => {
+                        if (draggedItem) draggedItem.classList.remove('dragging');
+                    });
+
+                    let clone = null;
+                    draggable.addEventListener('touchstart', (e) => {
+                        draggedItem = e.target;
+                        clone = draggedItem.cloneNode(true);
+                        clone.style.position = 'absolute';
+                        clone.style.zIndex = '1001';
+                        clone.style.pointerEvents = 'none';
+                        document.body.appendChild(clone);
+                        
+                        const touch = e.touches[0];
+                        clone.style.left = `${touch.pageX - clone.offsetWidth / 2}px`;
+                        clone.style.top = `${touch.pageY - clone.offsetHeight / 2}px`;
+                        draggedItem.classList.add('dragging');
+                    }, { passive: true });
+
+                    draggable.addEventListener('touchmove', (e) => {
+                        if (!clone) return;
+                        const touch = e.touches[0];
+                        clone.style.left = `${touch.pageX - clone.offsetWidth / 2}px`;
+                        clone.style.top = `${touch.pageY - clone.offsetHeight / 2}px`;
+                    }, { passive: true });
+
+                    draggable.addEventListener('touchend', (e) => {
+                        if (!clone || !draggedItem) return;
+                        clone.style.display = 'none';
+                        const touch = e.changedTouches[0];
+                        const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+                        clone.remove();
+                        
+                        draggedItem.classList.remove('dragging');
+                        const targetZone = elementUnder ? elementUnder.closest('.drop-zone') : null;
+                        handleDrop(targetZone, draggedItem);
+                        draggedItem = null;
+                    });
+                });
+
+                dropZones.forEach(zone => {
+                    zone.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        if (!zone.classList.contains('correct')) zone.classList.add('hovered');
+                    });
+                    zone.addEventListener('dragleave', () => {
+                        zone.classList.remove('hovered');
+                    });
+                    zone.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        handleDrop(e.currentTarget, draggedItem);
+                    });
+                });
+            }
+            
+            function handleDrop(targetZone, droppedItem) {
+                if (!targetZone || !droppedItem) return;
+                
+                targetZone.classList.remove('hovered');
+                const droppedId = droppedItem.id.split('-').pop();
+                const targetId = targetZone.dataset.targetId;
+
+                if (droppedId === targetId && !targetZone.classList.contains('correct')) {
+                    speak("¡Muy bien!");
+                    
+                    droppedItem.removeAttribute('style');
+                    
+                    targetZone.innerHTML = '';
+                    targetZone.appendChild(droppedItem);
+                    
+                    droppedItem.draggable = false;
+                    droppedItem.classList.remove('draggable');
+                    targetZone.classList.add('correct');
+                    
+                    if (targetZone.id === 'sentence-drop-zone') {
+                        completeConcept(droppedId);
+                        gameState.game4.currentIndex++;
+                        setTimeout(setupGame4, 1500);
+                    } else {
+                        completeConcept(droppedId);
+                        gameState.game2.correctlyPlaced++;
+                        if (gameState.game2.correctlyPlaced === gameState.game2.words.length) {
+                            speak("¡Puente completado! ¡Eres un genio!");
+                            nextBtn.disabled = false;
+                            nextBtn.classList.add('pulse');
+                        }
+                    }
+                } else if (droppedId !== targetId) {
+                    speak("Esa no es la pareja correcta. ¡Sigue intentando!");
+                    targetZone.classList.add('incorrect');
+                    setTimeout(() => targetZone.classList.remove('incorrect'), 500);
+                }
+            }
+
+            function initScene5() {
+                gameState.game3.currentIndex = 0;
+                nextBtn.disabled = true;
+                speak("El Loro Bromista mezcló los sonidos. Escucha las opciones y elige la correcta.");
+                setupGame3();
+            }
+
+            function setupGame3() {
+                if (gameState.game3.currentIndex >= gameState.game3.words.length) {
+                    speak("¡Fantástico! Ya casi tenemos todas las vacunas.");
+                    nextBtn.disabled = false;
+                    nextBtn.classList.add('pulse');
+                    return;
+                }
+
+                const correctWord = gameState.game3.words[gameState.game3.currentIndex];
+                gameState.game3.correctWord = correctWord;
+
+                const imageContainer = document.getElementById('game3-image-container');
+                imageContainer.innerHTML = `<div class="w-full h-full">${svgs[correctWord.id]}</div>`;
+
+                const audioOptionsContainer = document.getElementById('game3-audio-options');
+                audioOptionsContainer.innerHTML = '';
+
+                let otherWords = vocabulary.filter(v => v.id !== correctWord.id);
+                const wrongOption1 = otherWords.splice(Math.floor(Math.random() * otherWords.length), 1)[0];
+                const wrongOption2 = otherWords.splice(Math.floor(Math.random() * otherWords.length), 1)[0];
+
+                const options = [correctWord, wrongOption1, wrongOption2].sort(() => 0.5 - Math.random());
+
+                options.forEach((word, index) => {
+                    const audioBtn = document.createElement('button');
+                    audioBtn.className = 'btn btn-primary';
+                    audioBtn.textContent = `Escuchar Opción ${index + 1}`;
+                    audioBtn.dataset.wordName = word.name;
+                    audioBtn.dataset.wordId = word.id;
+                    audioBtn.dataset.state = 'listen'; // 'listen' or 'selected'
+                    audioBtn.addEventListener('click', handleGame3Click);
+                    audioOptionsContainer.appendChild(audioBtn);
+                });
+            }
+
+            function handleGame3Click(event) {
+                const selectedButton = event.currentTarget;
+                const state = selectedButton.dataset.state;
+
+                speak(selectedButton.dataset.wordName);
+
+                if (state === 'selected') {
+                    handleGame3Answer(selectedButton);
+                } else {
+                    const allButtons = document.querySelectorAll('#game3-audio-options button');
+                    allButtons.forEach((btn, index) => {
+                        btn.dataset.state = 'listen';
+                        btn.textContent = `Escuchar Opción ${index + 1}`;
+                        btn.classList.remove('btn-secondary', 'pulse');
+                        btn.classList.add('btn-primary');
+                    });
+
+                    selectedButton.dataset.state = 'selected';
+                    selectedButton.textContent = '¡Elegir este!';
+                    selectedButton.classList.remove('btn-primary');
+                    selectedButton.classList.add('btn-secondary', 'pulse');
+                }
+            }
+
+            function handleGame3Answer(selectedButton) {
+                const selectedId = selectedButton.dataset.wordId;
+                const correctId = gameState.game3.correctWord.id;
+                
+                document.querySelectorAll('#game3-audio-options button').forEach(b => b.disabled = true);
+
+                if (selectedId === correctId) {
+                    speak("¡Ese es!");
+                    selectedButton.style.backgroundColor = 'var(--success)';
+                    completeConcept(correctId);
+                    gameState.game3.currentIndex++;
+                    setTimeout(setupGame3, 1500);
+                } else {
+                    speak("Ese no es el sonido. Escucha otra vez.");
+                    selectedButton.style.backgroundColor = 'var(--danger)';
+                    setTimeout(() => {
+                        const allButtons = document.querySelectorAll('#game3-audio-options button');
+                        allButtons.forEach((btn, index) => {
+                            btn.disabled = false;
+                            btn.dataset.state = 'listen';
+                            btn.textContent = `Escuchar Opción ${index + 1}`;
+                            btn.classList.remove('btn-secondary', 'pulse');
+                            btn.classList.add('btn-primary');
+                            btn.style.backgroundColor = '';
+                        });
+                    }, 1500);
+                }
+            }
+
+            function initScene6() {
+                gameState.game4.currentIndex = 0;
+                nextBtn.disabled = true;
+                speak("¡Demuestra lo que sabes! Completa las oraciones.");
+                setupGame4();
+            }
+
+            function setupGame4() {
+                if (gameState.game4.currentIndex >= gameState.game4.sentences.length) {
+                    speak("¡Eres un experto! ¡Vamos al desafío final!");
+                    nextBtn.disabled = false;
+                    nextBtn.classList.add('pulse');
+                    return;
+                }
+
+                const currentSentenceData = gameState.game4.sentences[gameState.game4.currentIndex];
+                gameState.game4.correctWord = currentSentenceData;
+
+                const sentenceContainer = document.getElementById('game4-sentence-container');
+                const [part1, part2] = currentSentenceData.sentence.split('___');
+                sentenceContainer.innerHTML = `<span>${part1}</span><div id="sentence-drop-zone" data-target-id="${currentSentenceData.id}" class="drop-zone inline-block w-40 h-16 mx-2 align-middle"></div><span>${part2}</span>`;
+
+                const wordOptionsContainer = document.getElementById('game4-word-options');
+                wordOptionsContainer.innerHTML = '';
+                
+                let otherWords = vocabulary.filter(v => v.id !== currentSentenceData.id);
+                const wrongOption1 = otherWords.splice(Math.floor(Math.random() * otherWords.length), 1)[0];
+                const wrongOption2 = otherWords.splice(Math.floor(Math.random() * otherWords.length), 1)[0];
+
+                const options = [currentSentenceData, wrongOption1, wrongOption2].sort(() => 0.5 - Math.random());
+
+                options.forEach(word => {
+                    const wordEl = document.createElement('div');
+                    wordEl.id = `drag-sentence-${word.id}`;
+                    wordEl.className = 'draggable bg-[var(--secondary)] text-amber-900 p-3 rounded-full shadow-md text-xl font-bold';
+                    wordEl.textContent = word.name;
+                    wordEl.draggable = true;
+                    wordOptionsContainer.appendChild(wordEl);
+                });
+
+                addDragAndDropListeners();
+            }
+
+            function initScene7() {
+                nextBtn.disabled = true;
+                speak("¡Rápido! Atrapa las cosas correctas antes de que se escapen.");
+                gameState.game5.currentIndex = 0;
+                gameState.game5.speed = 10000;
+                setupGame5();
+            }
+            
+            let paradeInterval;
+            function setupGame5() {
+                if (gameState.game5.currentIndex >= 5) { 
+                    speak("¡Lo atrapaste todo! ¡Eres el mejor Héroe de la Salud!");
+                    nextBtn.disabled = false;
+                    nextBtn.classList.add('pulse');
+                    clearInterval(paradeInterval);
+                    return;
+                }
+
+                const correctWord = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+                gameState.game5.correctWord = correctWord;
+                document.getElementById('game5-target-word').textContent = correctWord.name;
+
+                const paradeArea = document.getElementById('game5-parade-area');
+                paradeArea.innerHTML = '';
+                clearInterval(paradeInterval);
+
+                paradeInterval = setInterval(() => {
+                    const word = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+                    const item = document.createElement('div');
+                    item.className = 'parade-item w-20 h-20 cursor-pointer';
+                    item.innerHTML = svgs[word.id];
+                    item.dataset.wordId = word.id;
+                    item.style.top = `${Math.random() * (paradeArea.clientHeight - 80)}px`;
+                    item.style.animationDuration = `${gameState.game5.speed / 1000}s`;
+                    
+                    addTouchGlow(item);
+                    item.addEventListener('click', handleGame5Click);
+                    
+                    paradeArea.appendChild(item);
+
+                    setTimeout(() => {
+                        if (item.parentElement) item.remove();
+                    }, gameState.game5.speed);
+
+                }, 800);
+            }
+
+            function handleGame5Click(event) {
+                const clickedItem = event.currentTarget;
+                const clickedId = clickedItem.dataset.wordId;
+                const correctId = gameState.game5.correctWord.id;
+
+                if (clickedId === correctId) {
+                    speak("¡Atrapado!");
+                    clickedItem.remove();
+                    completeConcept(correctId);
+                    gameState.game5.currentIndex++;
+                    gameState.game5.speed = Math.max(3000, gameState.game5.speed - 500);
+                    setupGame5();
+                } else {
+                    speak("¡Ese no es!");
+                    clickedItem.style.opacity = '0.3';
+                    clickedItem.style.pointerEvents = 'none';
+                }
+            }
+
+            // --- LÓGICA DEL NUEVO MINIJUEGO (ESCENA 7.5) ---
+
+            function initScene7_5() {
+                nextBtn.disabled = true;
+                gameState.game6 = { vaccinated: 0, sick: 0, maxSick: 5, targetVaccinated: 10, isOver: false };
+                
+                const gameArea = document.getElementById('game6-area');
+                const vaccinatedCountEl = document.getElementById('vaccinated-count');
+                const sickCountEl = document.getElementById('sick-count');
+                const messageEl = document.getElementById('game6-message');
+
+                gameArea.innerHTML = '';
+                vaccinatedCountEl.textContent = '0';
+                sickCountEl.textContent = '0';
+                messageEl.innerHTML = '&nbsp;';
+                
+                speak("¡A vacunar! Haz clic dos veces en cada persona para protegerla con ambas dosis.");
+
+                game6Interval = setInterval(createPerson, 2000);
+            }
+
+            function createPerson() {
+                if (gameState.game6.isOver) return;
+
+                const gameArea = document.getElementById('game6-area');
+                const personEl = document.createElement('div');
+                personEl.className = 'person';
+                personEl.innerHTML = `
+                    ${svgs.person}
+                    <div class="dose-indicator"></div>
+                    <div class="shield-icon">${svgs.shield}</div>
+                `;
+                personEl.dataset.doses = 0;
+
+                personEl.style.left = `${Math.random() * (gameArea.clientWidth - 80)}px`;
+                personEl.style.top = `${Math.random() * (gameArea.clientHeight - 100)}px`;
+
+                personEl.addEventListener('click', handleVaccinationClick);
+
+                const sickTimeout = setTimeout(() => {
+                    if (personEl.parentElement && !personEl.classList.contains('protected')) {
+                        makePersonSick(personEl);
+                    }
+                }, 7000);
+                
+                personEl.dataset.sickTimeout = sickTimeout;
+
+                gameArea.appendChild(personEl);
+            }
+
+            function handleVaccinationClick(event) {
+                const personEl = event.currentTarget;
+                if (personEl.classList.contains('protected') || personEl.classList.contains('sick')) return;
+
+                let doses = parseInt(personEl.dataset.doses, 10);
+                doses++;
+                personEl.dataset.doses = doses;
+
+                const doseIndicator = personEl.querySelector('.dose-indicator');
+                doseIndicator.textContent = doses;
+                doseIndicator.className = `dose-indicator dose-${doses}`;
+                
+                if (doses === 1) {
+                    speak("Primera dosis");
+                } else if (doses === 2) {
+                    speak("¡Protegido!");
+                    personEl.classList.add('protected');
+                    personEl.style.pointerEvents = 'none';
+                    clearTimeout(personEl.dataset.sickTimeout);
+                    
+                    gameState.game6.vaccinated++;
+                    document.getElementById('vaccinated-count').textContent = gameState.game6.vaccinated;
+                    
+                    if (gameState.game6.vaccinated >= gameState.game6.targetVaccinated) {
+                        endGame6(true);
+                    }
+                }
+            }
+
+            function makePersonSick(personEl) {
+                if (gameState.game6.isOver) return;
+                personEl.classList.add('sick');
+                personEl.style.pointerEvents = 'none';
+                
+                gameState.game6.sick++;
+                document.getElementById('sick-count').textContent = gameState.game6.sick;
+
+                if (gameState.game6.sick >= gameState.game6.maxSick) {
+                    endGame6(false);
+                }
+            }
+
+            function endGame6(isWin) {
+                gameState.game6.isOver = true;
+                clearInterval(game6Interval);
+                const messageEl = document.getElementById('game6-message');
+
+                if (isWin) {
+                    speak("¡Misión cumplida! ¡Has protegido a la comunidad!");
+                    messageEl.textContent = "¡Ganaste! ¡Todos están a salvo!";
+                    messageEl.style.color = 'var(--success)';
+                    nextBtn.disabled = false;
+                    nextBtn.classList.add('pulse');
+                } else {
+                    speak("Oh no, el virus se ha extendido. ¡Inténtalo de nuevo!");
+                    messageEl.textContent = "¡Inténtalo de nuevo para proteger a todos!";
+                    messageEl.style.color = 'var(--danger)';
+                    // Opcional: Añadir un botón para reiniciar este minijuego
+                    setTimeout(initScene7_5, 3000);
+                }
+            }
+
+
+            function initScene8() {
+                speak("¡Felicidades, Héroe de la Salud! ¡Lo lograste!");
+                const duration = 5 * 1000;
+                const animationEnd = Date.now() + duration;
+                const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+
+                function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+
+                const interval = setInterval(function() {
+                    const timeLeft = animationEnd - Date.now();
+                    if (timeLeft <= 0) return clearInterval(interval);
+                    const particleCount = 50 * (timeLeft / duration);
+                    confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                    confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+                }, 250);
+            }
+
+            // --- NAVEGACIÓN Y EVENTOS INICIALES ---
+            startBtn.addEventListener('click', () => showScene(sceneOrder.indexOf(2)));
+            
+            restartBtn.addEventListener('click', () => {
+                resetGameState();
+                updateProgressBar();
+                showScene(0);
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if (nextBtn.disabled) return;
+                if (gameState.currentSceneIndex < sceneOrder.length - 1) {
+                    // Limpiar intervalos de juegos al avanzar
+                    clearInterval(paradeInterval);
+                    clearInterval(game6Interval);
+                    showScene(gameState.currentSceneIndex + 1);
+                    nextBtn.classList.remove('pulse');
+                }
+            });
+
+            backBtn.addEventListener('click', () => {
+                if (backBtn.disabled) return;
+                if (gameState.currentSceneIndex > sceneOrder.indexOf(2)) { // No se puede ir más atrás de la primera actividad
+                    clearInterval(paradeInterval);
+                    clearInterval(game6Interval);
+                    showScene(gameState.currentSceneIndex - 1);
+                }
+            });
+
+            // Iniciar el juego
+            resetGameState();
+            showScene(0);
+        });
+    </script>
+</body>
+</html>
