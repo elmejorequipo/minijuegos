@@ -11,33 +11,26 @@
     <meta property="og:title" content="Computina al Rescate: Aventura de Periféricos">
     <meta property="og:description" content="Un juego divertido e interactivo para que los niños aprendan sobre el teclado, monitor, ratón y más.">
     <meta property="og:type" content="website">
-    <!-- Para la imagen de OG, lo ideal sería una URL. Como es un archivo único, esta es una solución alternativa. -->
     <meta property="og:image" content="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAwIDYzMCI+PHJlY3Qgd2lkdGg9IjEyMDAiIGhlaWdodD0iNjMwIiBmaWxsPSIjMGExOTJmIi8+PHRleHQgeD0iNTAiIHk9IjM1MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iODUiIGZpbGw9IiNGRkQ3MDAiIHN0eWxlPSJmb250LXdlaWdodDpib2xkIj5Db21wdXRpbmEgYWwgUmVzY2F0ZTwvdGV4dD48dGV4dCB4PSI1MCIgeT0iNDUwIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSI0NSIgZmlsbD0iI2FkYWFkYSI+QXZlbnR1cmEgZGUgUGVyaWYgcmFpY29zPC90ZXh0Pjwvc3ZnPg==">
     
     <!-- Librerías Externas -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
-    <!-- Estilos CSS Personalizados con Tema Azul y Amarillo -->
+    <!-- Estilos CSS Personalizados con Mejoras de Usabilidad -->
     <style>
-        /* Tipografía importada para un look tecnológico */
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;700&display=swap');
-
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #0a192f; /* Azul oscuro de fondo */
-            color: #f0f0e0; /* Texto blanco-amarillento */
-            overflow: hidden; /* Evita el scroll indeseado entre escenas */
+            background-color: #0a192f;
+            color: #f0f0e0;
+            overflow: hidden;
         }
-
-        /* Estilo para los títulos principales y de escena */
         h1, h2 {
             font-family: 'Orbitron', sans-serif;
-            color: #FFD700; /* Amarillo dorado */
+            color: #FFD700;
             text-shadow: 0 0 5px #FFD700, 0 0 10px #FFD700, 0 0 15px #fcae1e;
         }
-        
-        /* Contenedor principal que centra el contenido */
         .scene-container {
             width: 100vw;
             height: 100vh;
@@ -50,71 +43,61 @@
             left: 0;
             transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
         }
-        
-        /* Oculta las escenas inactivas */
         .hidden-scene {
             opacity: 0;
             transform: scale(0.95);
             pointer-events: none;
         }
-        
-        /* Botones con estilo azul y amarillo */
         .btn-custom {
             font-family: 'Orbitron', sans-serif;
-            background: linear-gradient(145deg, #1e3a8a, #3b82f6); /* Gradiente de azules */
-            border: 2px solid #FFD700; /* Borde amarillo */
+            background: linear-gradient(145deg, #1e3a8a, #3b82f6);
+            border: 2px solid #FFD700;
             color: white;
             padding: 0.75rem 1.5rem;
             border-radius: 8px;
             box-shadow: 0 0 5px #FFD700, 0 0 15px #3b82f6 inset;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             transform: perspective(1px) translateZ(0);
         }
-
         .btn-custom:hover, .btn-custom:focus {
             transform: scale(1.05);
             box-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700, 0 0 25px #3b82f6 inset;
         }
-        
+        .btn-custom:active {
+            transform: scale(0.98);
+            box-shadow: 0 0 3px #FFD700, 0 0 10px #3b82f6 inset;
+        }
         .btn-custom:disabled {
-            background: #444;
-            border-color: #666;
-            color: #888;
+            background: #4b5563;
+            border-color: #6b7280;
+            color: #9ca3af;
             box-shadow: none;
             cursor: not-allowed;
             transform: scale(1);
+            filter: grayscale(50%);
         }
-        
-        /* Barra de Progreso */
         .progress-bar-container {
             width: 80%;
             height: 2rem;
-            background-color: #1e293b; /* Azul grisáceo */
+            background-color: #1e293b;
             border: 2px solid #FFD700;
             border-radius: 10px;
             padding: 4px;
             box-shadow: 0 0 5px #FFD700 inset;
         }
-
         .progress-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, #FBBF24, #F59E0B); /* Gradiente de amarillos */
+            background: linear-gradient(90deg, #FBBF24, #F59E0B);
             border-radius: 5px;
             transition: width 0.5s ease-in-out;
             box-shadow: 0 0 10px #FBBF24;
         }
-        
-        /* Animaciones de Feedback */
         @keyframes correct-answer {
-            0% { transform: scale(1); box-shadow: 0 0 10px #FBBF24, 0 0 5px #FBBF24 inset; }
-            50% { transform: scale(1.1); box-shadow: 0 0 20px #FBBF24, 0 0 10px #FBBF24 inset; }
-            100% { transform: scale(1); box-shadow: 0 0 10px #FBBF24, 0 0 5px #FBBF24 inset; }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); border-color: #34D399; box-shadow: 0 0 20px #34D399; }
+            100% { transform: scale(1); }
         }
-        .correct-animation {
-            animation: correct-answer 0.5s ease-out;
-            border-color: #FBBF24 !important;
-        }
-        
+        .correct-animation { animation: correct-answer 0.5s ease-out; }
         @keyframes incorrect-answer {
             0%, 100% { transform: translateX(0); }
             20%, 60% { transform: translateX(-10px); }
@@ -122,48 +105,17 @@
         }
         .incorrect-animation {
             animation: incorrect-answer 0.4s;
-            border-color: #ff0000 !important;
-            box-shadow: 0 0 10px #ff0000;
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 10px #ef4444;
         }
-
-        /* Estilos para arrastrar y soltar (Drag and Drop) */
-        .draggable {
-            cursor: grab;
-            user-select: none; /* Evita la selección de texto al arrastrar */
-        }
-        .drop-zone {
-            transition: background-color 0.3s, box-shadow 0.3s;
-            border: 3px dashed #475569; /* Azul grisáceo */
-        }
-        .drop-zone.over {
-            background-color: rgba(255, 215, 0, 0.2);
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
-        }
-        .drop-zone.dropped {
-            border-style: solid;
-            border-color: #FFD700;
-            background-color: rgba(255, 215, 0, 0.1);
-        }
-        
-        /* Estilos para el juego del desfile */
-        .parade-item {
-            position: absolute;
-            animation: parade-animation 15s linear infinite;
-        }
-        @keyframes parade-animation {
-            from { transform: translateX(110vw); }
-            to { transform: translateX(-10vw); }
-        }
-
-        /* Huevo de Pascua */
-        #easter-egg-virus {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            transform: translateY(150%);
-            z-index: 100;
+        .draggable { cursor: grab; user-select: none; }
+        .dragging { opacity: 0.5; cursor: grabbing; }
+        .drop-zone { transition: background-color 0.3s, box-shadow 0.3s; border: 3px dashed #475569; }
+        .drop-zone.over { background-color: rgba(255, 215, 0, 0.2); box-shadow: 0 0 15px rgba(255, 215, 0, 0.7); }
+        .drop-zone.dropped { border-style: solid; border-color: #FFD700; background-color: rgba(255, 215, 0, 0.1); }
+        #easter-egg-virus { position: absolute; bottom: 20px; right: 20px; width: 50px; transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); transform: translateY(150%); z-index: 100; }
+        .pointer-events-none-temp {
+            pointer-events: none;
         }
     </style>
 </head>
@@ -173,190 +125,147 @@
     <!-- Contenedor de SVGs para reutilización -->
     <svg width="0" height="0" class="absolute">
         <defs>
-            <!-- Personaje Guía: Computina -->
-            <svg id="svg-computina" viewBox="0 0 100 120">
-                <rect x="20" y="30" width="60" height="60" rx="10" fill="#c0c0c0"/>
-                <rect x="15" y="25" width="70" height="70" rx="12" fill="none" stroke="#808080" stroke-width="2"/>
-                <rect x="30" y="40" width="40" height="30" rx="5" fill="#0a192f"/>
-                <circle cx="50" cy="55" r="8" fill="#FFD700"/> <!-- Ojo amarillo -->
-                <circle cx="50" cy="55" r="3" fill="#000"/>
-                <path d="M40 75 Q50 85 60 75" stroke="#000" stroke-width="2" fill="none"/>
-                <rect x="45" y="90" width="10" height="15" fill="#a0a0a0"/>
-                <rect x="30" y="105" width="40" height="10" rx="5" fill="#808080"/>
-                <line x1="20" y1="40" x2="10" y2="30" stroke="#a0a0a0" stroke-width="4"/>
-                <line x1="80" y1="40" x2="90" y2="30" stroke="#a0a0a0" stroke-width="4"/>
-            </svg>
-
-            <!-- Antagonista: Virus Juguetón -->
-            <svg id="svg-virus" viewBox="0 0 50 50">
-                <path d="M25,5 C12.8,5 5,12.8 5,25 C5,37.2 12.8,45 25,45 C37.2,45 45,37.2 45,25 C45,12.8 37.2,5 25,5 Z" fill="#9f00a7"/>
-                <circle cx="18" cy="18" r="4" fill="#FFFF00"/>
-                <circle cx="32" cy="18" r="4" fill="#FFFF00"/>
-                <path d="M18,32 Q25,25 32,32" stroke="#FFFF00" stroke-width="2" fill="none"/>
-            </svg>
-            
-            <!-- Periféricos -->
+            <svg id="svg-computina" viewBox="0 0 100 120"><rect x="20" y="30" width="60" height="60" rx="10" fill="#c0c0c0"/><rect x="15" y="25" width="70" height="70" rx="12" fill="none" stroke="#808080" stroke-width="2"/><rect x="30" y="40" width="40" height="30" rx="5" fill="#0a192f"/><circle cx="50" cy="55" r="8" fill="#FFD700"/><circle cx="50" cy="55" r="3" fill="#000"/><path d="M40 75 Q50 85 60 75" stroke="#000" stroke-width="2" fill="none"/><rect x="45" y="90" width="10" height="15" fill="#a0a0a0"/><rect x="30" y="105" width="40" height="10" rx="5" fill="#808080"/><line x1="20" y1="40" x2="10" y2="30" stroke="#a0a0a0" stroke-width="4"/><line x1="80" y1="40" x2="90" y2="30" stroke="#a0a0a0" stroke-width="4"/></svg>
+            <svg id="svg-virus" viewBox="0 0 50 50"><path d="M25,5 C12.8,5 5,12.8 5,25 C5,37.2 12.8,45 25,45 C37.2,45 45,37.2 45,25 C45,12.8 37.2,5 25,5 Z" fill="#9f00a7"/><circle cx="18" cy="18" r="4" fill="#FFFF00"/><circle cx="32" cy="18" r="4" fill="#FFFF00"/><path d="M18,32 Q25,25 32,32" stroke="#FFFF00" stroke-width="2" fill="none"/></svg>
             <svg id="svg-teclado" viewBox="0 0 24 24"><path fill="currentColor" d="M20 5H4c-1.11 0-2 .89-2 2v10c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V7c0-1.11-.89-2-2-2m-9 3h2v2h-2V8m0 3h2v2h-2v-2m-3-3h2v2H8V8m0 3h2v2H8v-2m-1 2H5v-2h2v2m0-3H5V8h2v2m12 5H5v-2h14v2m-2-5h2v2h-2v-2m0-3h2v2h-2V8Z"/></svg>
             <svg id="svg-monitor" viewBox="0 0 24 24"><path fill="currentColor" d="M21 16H3V4h18m0-2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7v2H8v2h8v-2h-2v-2h7c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2Z"/></svg>
-            <!-- Ratón Mejorado -->
             <svg id="svg-raton" viewBox="0 0 24 24"><path fill="currentColor" d="M12 1.75C8.27 1.75 5.25 4.78 5.25 8.5v7c0 3.72 3.02 6.75 6.75 6.75s6.75-3.03 6.75-6.75v-7C18.75 4.78 15.73 1.75 12 1.75M11.5 4h1v5h-1V4Z"/></svg>
             <svg id="svg-impresora" viewBox="0 0 24 24"><path fill="currentColor" d="M18 7H6V3h12M6 21h12v-4H6m-2-9H2v6h2c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1m18 1V8c0-.55-.45-1-1-1h-1v4h2M19 12h-1v-2H6v2H5c-1.66 0-3 1.34-3 3v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c0-1.66-1.34-3-3-3m-4-7H9v2h6Z"/></svg>
             <svg id="svg-altavoces" viewBox="0 0 24 24"><path fill="currentColor" d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2M6 4h12v2H6M6 20v-2h12v2zm7-14c-2.21 0-4 1.79-4 4s1.79 4 4 4s4-1.79 4-4s-1.79-4-4-4m0 6c-1.1 0-2-.9-2-2s.9-2 2-2s2 .9 2 2s-.9 2-2 2Z"/></svg>
             <svg id="svg-microfono" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3m7 9c0 3.53-2.61 6.43-6 6.92V21h-2v-3.08c-3.39-.49-6-3.39-6-6.92h2a5 5 0 0 0 5 5a5 5 0 0 0 5-5Z"/></svg>
             <svg id="svg-camara-web" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12.5a3.5 3.5 0 1 1 0-7a3.5 3.5 0 0 1 0 7m-7 7.74c0-2.5 3.13-4.24 7-4.24s7 1.74 7 4.24V21H5zM12 2a10 10 0 0 0-9.8 11.5c.2.6.5.9.9.9s.7-.3.9-.9A8 8 0 1 1 4 12c0 .5-.4.9-.9.9s-.9-.4-1-.9A10 10 0 0 0 12 2"/></svg>
-            <!-- Auriculares Mejorados -->
             <svg id="svg-auriculares" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-10 10v4c0 1.1.9 2 2 2h2v-6H4v-4c0-4.41 3.59-8 8-8s8 3.59 8 8v4h-2v6h2c1.1 0 2-.9 2-2v-4A10 10 0 0 0 12 2M7 15h2v4H7zm8 0h2v4h-2z"/></svg>
             <svg id="svg-escaner" viewBox="0 0 24 24"><path fill="currentColor" d="M3 19h18v-7h-2v5H5v-5H3zM4 3h16c.55 0 1 .45 1 1v5H3V4c0-.55.45-1 1-1m18-2H2c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2"/></svg>
             <svg id="svg-medalla" viewBox="0 0 24 24"><path fill="#FFD700" d="m12 16.22l-4.24 2.23l.81-4.72l-3.44-3.35l4.74-.69L12 6l2.12 4.3l4.74.69l-3.44 3.35l.81 4.72z"/><path fill="#FFC107" d="M12 2a10 10 0 1 0 0 20a10 10 0 0 0 0-20m0 18a8 8 0 1 1 0-16a8 8 0 0 1 0 16"/></svg>
         </defs>
     </svg>
 
-    <!-- Barra de Progreso Superior -->
-    <header id="main-header" class="fixed top-0 left-0 right-0 p-4 z-50 bg-opacity-50 bg-blue-900/50 backdrop-blur-sm hidden">
+    <header id="main-header" class="fixed top-0 left-0 right-0 p-4 z-50 bg-blue-900/50 backdrop-blur-sm hidden">
         <div class="flex items-center justify-between max-w-4xl mx-auto">
             <div class="text-lg font-bold text-yellow-300">Progreso:</div>
             <div class="progress-bar-container flex-grow mx-4">
                 <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
             </div>
-            <div id="progress-text" class="text-lg font-bold text-yellow-300">0 / 9</div>
+            <div id="progress-text" class="text-lg font-bold text-yellow-300 w-48 text-center">0 / 9</div>
         </div>
     </header>
 
-    <!-- Escena 1: Introducción -->
-    <div id="scene-1" class="scene-container flex-col text-center">
-        <svg class="w-24 h-30 mb-4"><use xlink:href="#svg-computina"></use></svg>
-        <h1 class="text-4xl md:text-5xl mb-4">¡Computina al Rescate!</h1>
-        <p class="max-w-2xl text-lg md:text-xl mb-8">
-            ¡Hola, super-estudiante! Soy Computina. Un travieso **Virus Juguetón** ha desordenado todas las partes de mi computadora. ¡No sé qué es cada cosa! Necesito tu ayuda para identificar los periféricos y poner todo en orden. ¿Aceptas la misión?
-        </p>
-        <button id="start-mission-btn" class="btn-custom text-2xl">¡Acepto la Misión!</button>
-    </div>
+    <main id="game-container">
+        <!-- Escena 1: Introducción -->
+        <div id="scene-1" class="scene-container flex-col text-center">
+            <svg class="w-24 h-30 mb-4"><use href="#svg-computina"></use></svg>
+            <h1 class="text-4xl md:text-5xl mb-4">¡Computina al Rescate!</h1>
+            <p class="max-w-2xl text-lg md:text-xl mb-8">¡Hola, super-estudiante! Soy Computina. Un travieso **Virus Juguetón** ha desordenado todas las partes de mi computadora. ¡Necesito tu ayuda para poner todo en orden! ¿Aceptas la misión?</p>
+            <button data-target-scene="2" class="nav-btn btn-custom text-2xl">¡Acepto la Misión!</button>
+        </div>
 
-    <!-- Escena 2: Explicación de Conceptos -->
-    <div id="scene-2" class="scene-container hidden-scene flex-col text-center">
-        <h2 class="text-3xl md:text-4xl mb-6">¿Qué es un Periférico?</h2>
-        <div class="flex flex-col md:flex-row items-center gap-8 max-w-4xl">
-            <svg class="w-24 h-30 flex-shrink-0"><use xlink:href="#svg-computina"></use></svg>
-            <p class="text-lg md:text-xl text-left">
-                ¡Excelente! Antes de empezar, te explico rápido. Los **periféricos** son las partes de la computadora que están por fuera y nos ayudan a comunicarnos con ella.
-                <br><br>
-                Hay dos tipos: los de **Entrada**, que sirven para *meter información* (como el teclado), y los de **Salida**, que sirven para *sacar información* (como el monitor).
-                <br><br>
-                ¿Listo para ver los que desordenó el virus?
-            </p>
-        </div>
-        <div class="mt-8 space-x-4">
-            <button id="back-to-1" class="btn-custom">Retroceder</button>
-            <button id="go-to-3" class="btn-custom">¡Estoy Listo!</button>
-        </div>
-    </div>
-    
-    <!-- Escena 3: Laboratorio de Componentes -->
-    <div id="scene-3" class="scene-container hidden-scene flex-col">
-        <h2 class="text-3xl md:text-4xl mb-2 text-center">El Laboratorio de Componentes</h2>
-        <p class="mb-6 text-center">Haz clic en cada componente para escuchar su nombre. ¡Debes escucharlos todos para continuar!</p>
-        <div id="concept-grid" class="grid grid-cols-3 gap-4 md:gap-6 p-4 bg-blue-900/30 rounded-lg">
-            <!-- Los conceptos se agregarán aquí con JS -->
-        </div>
-        <div class="mt-8 space-x-4">
-            <button id="back-to-2" class="btn-custom">Retroceder</button>
-            <button id="go-to-4" class="btn-custom" disabled>¡A Reparar!</button>
-        </div>
-    </div>
-
-    <!-- Escena 4: Minijuego 1 (Audio-Visual) -->
-    <div id="scene-4" class="scene-container hidden-scene flex-col text-center">
-        <h2 class="text-3xl md:text-4xl mb-2">Desafío 1: El Eco-Identificador</h2>
-        <p class="mb-6">¡Escucha con atención y selecciona la imagen correcta!</p>
-        <p class="mb-4 text-xl">Busca el:</p>
-        <div id="audio-game-target" class="text-3xl font-bold text-yellow-300 mb-6 h-10"></div>
-        <div id="audio-game-options" class="flex justify-center gap-4 md:gap-8">
-            <!-- Opciones del juego de audio -->
-        </div>
-        <div class="mt-8 space-x-4">
-            <button id="back-to-3" class="btn-custom">Retroceder</button>
-        </div>
-    </div>
-    
-    <!-- Escena 5: Minijuego 2 (Arrastrar y Soltar) -->
-    <div id="scene-5" class="scene-container hidden-scene flex-col">
-        <h2 class="text-3xl md:text-4xl mb-2 text-center">Desafío 2: El Organizador de Nombres</h2>
-        <p class="mb-6 text-center">¡El virus borró las etiquetas! Arrastra cada nombre a su imagen correcta.</p>
-        <div class="flex flex-col md:flex-row items-center justify-center gap-8 w-full max-w-4xl">
-            <div id="drag-words" class="flex md:flex-col gap-4 p-4 bg-blue-900/30 rounded-lg">
-                <!-- Palabras para arrastrar -->
+        <!-- Escena 2: Explicación de Conceptos -->
+        <div id="scene-2" class="scene-container hidden-scene flex-col text-center">
+            <h2 class="text-3xl md:text-4xl mb-6">¿Qué es un Periférico?</h2>
+            <div class="flex flex-col md:flex-row items-center gap-8 max-w-4xl">
+                <svg class="w-24 h-30 flex-shrink-0"><use href="#svg-computina"></use></svg>
+                <p class="text-lg md:text-xl text-left">¡Excelente! Los **periféricos** son las partes que nos ayudan a comunicarnos con la computadora.<br><br>Hay de **Entrada**, para *meter información* (como el teclado), y de **Salida**, para *sacar información* (como el monitor).<br><br>¿Listo para repararlos?</p>
             </div>
-            <div id="drop-images" class="grid grid-cols-1 gap-4 flex-grow">
-                <!-- Zonas para soltar -->
+            <div class="mt-8 space-x-4">
+                <button data-target-scene="1" class="nav-btn btn-custom">Retroceder</button>
+                <button data-target-scene="3" class="nav-btn btn-custom">¡Estoy Listo!</button>
             </div>
         </div>
-         <div class="mt-8 space-x-4">
-            <button id="back-to-4" class="btn-custom">Retroceder</button>
-        </div>
-    </div>
-
-    <!-- Escena 6: Minijuego 3 (Escucha Avanzada) -->
-    <div id="scene-6" class="scene-container hidden-scene flex-col text-center">
-        <h2 class="text-3xl md:text-4xl mb-2">Desafío 3: El Detector Sónico</h2>
-        <p id="instruction-juego6" class="mb-6">Primero, haz clic en cada opción para escuchar los sonidos.</p>
-        <div id="advanced-audio-image" class="mb-6">
-            <!-- Imagen a identificar -->
-        </div>
-        <div id="advanced-audio-options" class="flex flex-col md:flex-row gap-4">
-            <!-- Botones de audio -->
-        </div>
-        <div class="mt-8 space-x-4">
-            <button id="back-to-5" class="btn-custom">Retroceder</button>
-        </div>
-    </div>
-
-    <!-- Escena 7: Minijuego 4 (Aplicación en Oraciones) -->
-    <div id="scene-7" class="scene-container hidden-scene flex-col text-center">
-        <h2 class="text-3xl md:text-4xl mb-2">Desafío 4: Conectando las Ideas</h2>
-        <p class="mb-6">¡Demuestra lo que sabes! Completa la oración con la palabra correcta.</p>
-        <div id="sentence-container" class="p-6 bg-blue-900/30 rounded-lg text-2xl md:text-3xl min-h-[100px] flex items-center justify-center">
-             <!-- La oración aparecerá aquí -->
-        </div>
-        <div id="sentence-drop-zone" class="my-4 p-6 border-4 border-dashed border-blue-300/50 rounded-lg min-h-[80px] w-80 text-center text-gray-400">
-            Arrastra la palabra aquí
-        </div>
-        <div id="sentence-word-options" class="flex flex-wrap justify-center gap-4 mt-4">
-            <!-- Palabras para arrastrar -->
-        </div>
-        <div class="mt-8 space-x-4">
-            <button id="back-to-6" class="btn-custom">Retroceder</button>
-        </div>
-    </div>
-
-    <!-- Escena 8: Minijuego 5 (Desfile) -->
-    <div id="scene-8" class="scene-container hidden-scene flex-col text-center">
-        <h2 class="text-3xl md:text-4xl mb-2">¡Desafío Final: El Desfile Loco!</h2>
-        <p class="mb-4">¡El Virus Juguetón lanzó su último truco! Haz clic en el componente correcto antes de que se escape.</p>
-        <div class="text-2xl mb-4">Encuentra: <span id="parade-target-name" class="font-bold text-yellow-300"></span></div>
-        <div id="parade-area" class="w-full h-64 bg-blue-900/30 rounded-lg overflow-hidden relative">
-            <!-- Componentes desfilando -->
-        </div>
-        <div class="mt-8 space-x-4">
-            <button id="back-to-7" class="btn-custom">Retroceder</button>
-        </div>
-    </div>
-
-    <!-- Escena 9: Conclusión -->
-    <div id="scene-9" class="scene-container hidden-scene flex-col text-center">
-        <svg class="w-24 h-24 text-yellow-400 mb-4"><use xlink:href="#svg-medalla"></use></svg>
-        <h1 class="text-4xl md:text-5xl mb-4">¡MISIÓN CUMPLIDA!</h1>
-        <p class="max-w-2xl text-lg md:text-xl mb-6">
-            ¡Lo lograste! ¡Venciste al Virus Juguetón y reparaste la computadora! Eres un verdadero genio de la computación. ¡Gracias por tu ayuda!
-        </p>
-        <h3 class="text-2xl font-bold text-yellow-300 mb-4">Repaso Final de Componentes:</h3>
-        <div id="final-summary-grid" class="grid grid-cols-3 sm:grid-cols-5 gap-4 p-4 bg-blue-900/30 rounded-lg">
-             <!-- Resumen de vocabulario -->
-        </div>
-        <button id="restart-btn" class="btn-custom text-xl mt-8">Jugar de Nuevo</button>
         
-        <!-- Huevo de Pascua -->
-        <svg id="easter-egg-virus" class="cursor-pointer"><use xlink:href="#svg-virus"></use></svg>
-    </div>
+        <!-- Escena 3: Laboratorio de Componentes -->
+        <div id="scene-3" class="scene-container hidden-scene flex-col">
+            <h2 class="text-3xl md:text-4xl mb-2 text-center">Laboratorio de Componentes</h2>
+            <p class="mb-6 text-center">Haz clic en cada componente para escucharlo. ¡Debes oírlos todos para continuar!</p>
+            <div id="concept-grid" class="grid grid-cols-3 gap-4 md:gap-6 p-4 bg-blue-900/30 rounded-lg"></div>
+            <div class="mt-8 space-x-4">
+                <button data-target-scene="2" class="nav-btn btn-custom">Retroceder</button>
+                <button data-target-scene="4" id="go-to-4" class="nav-btn btn-custom" disabled>¡A Reparar!</button>
+            </div>
+        </div>
+
+        <!-- Escena 4: Minijuego 1 (Audio-Visual) -->
+        <div id="scene-4" class="scene-container hidden-scene flex-col text-center">
+            <h2 class="text-3xl md:text-4xl mb-2">Desafío 1: El Eco-Identificador</h2>
+            <p class="mb-6">¡Escucha con atención y selecciona la imagen correcta!</p>
+            <div id="audio-game-target" class="text-3xl font-bold text-yellow-300 mb-6 h-10"></div>
+            <div id="audio-game-options" class="flex justify-center gap-4 md:gap-8"></div>
+            <div class="mt-8 space-x-4">
+                <button data-target-scene="3" class="nav-btn btn-custom">Retroceder</button>
+            </div>
+        </div>
+        
+        <!-- Escena 5: Minijuego 2 (Arrastrar y Soltar) -->
+        <div id="scene-5" class="scene-container hidden-scene flex-col">
+            <h2 class="text-3xl md:text-4xl mb-2 text-center">Desafío 2: El Organizador</h2>
+            <p class="mb-6 text-center">¡El virus borró las etiquetas! Arrastra cada nombre a su imagen.</p>
+            <div class="flex flex-col md:flex-row items-start justify-center gap-8 w-full max-w-4xl">
+                <div id="drag-words" class="flex md:flex-col gap-4 p-4 bg-blue-900/30 rounded-lg"></div>
+                <div id="drop-images" class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-grow"></div>
+            </div>
+            <div class="mt-8 space-x-4">
+                <button data-target-scene="4" class="nav-btn btn-custom">Retroceder</button>
+            </div>
+        </div>
+
+        <!-- Escena 6: Minijuego 3 (Escucha Avanzada) -->
+        <div id="scene-6" class="scene-container hidden-scene flex-col text-center">
+            <h2 class="text-3xl md:text-4xl mb-2">Desafío 3: El Detector Sónico</h2>
+            <p id="instruction-juego6" class="mb-6 max-w-lg">Identifica el componente de la imagen. ¡Escucha las opciones y elige la correcta!</p>
+            <div id="advanced-audio-image" class="mb-6"></div>
+            <div id="advanced-audio-options" class="flex flex-col md:flex-row gap-4"></div>
+            <div class="mt-8 space-x-4">
+                <button data-target-scene="5" class="nav-btn btn-custom">Retroceder</button>
+            </div>
+        </div>
+
+        <!-- Escena 7: Minijuego 4 (Aplicación en Oraciones) -->
+        <div id="scene-7" class="scene-container hidden-scene flex-col text-center">
+            <h2 class="text-3xl md:text-4xl mb-2">Desafío 4: Conectando Ideas</h2>
+            <p class="mb-6">¡Demuestra lo que sabes! Completa la oración con la palabra correcta.</p>
+            <div id="sentence-container" class="p-6 bg-blue-900/30 rounded-lg text-2xl md:text-3xl min-h-[100px] flex items-center justify-center"></div>
+            <div id="sentence-drop-zone" class="my-4 p-6 border-4 border-dashed border-blue-300/50 rounded-lg min-h-[80px] w-80 text-center text-gray-400">Arrastra la palabra aquí</div>
+            <div id="sentence-word-options" class="flex flex-wrap justify-center gap-4 mt-4"></div>
+            <div class="mt-8 space-x-4">
+                <button data-target-scene="6" class="nav-btn btn-custom">Retroceder</button>
+            </div>
+        </div>
+
+        <!-- Escena 8: Minijuego 5 (Clasificación) -->
+        <div id="scene-8" class="scene-container hidden-scene flex-col text-center">
+            <h2 class="text-3xl md:text-4xl mb-2">Desafío 5: Clasificación Maestra</h2>
+            <p class="mb-6 max-w-2xl">¡Último paso! Arrastra cada periférico a su caja: **Entrada** o **Salida**.</p>
+            <div class="flex flex-col lg:flex-row gap-8 w-full max-w-6xl p-4">
+                <!-- Zona de Salida -->
+                <div class="flex-1 bg-blue-900/50 rounded-lg p-4">
+                    <h3 class="text-2xl font-bold text-yellow-300 mb-4 border-b-2 border-yellow-300 pb-2">Periféricos de SALIDA</h3>
+                    <div id="salida-drop-zone" class="drop-zone min-h-[300px] h-full grid grid-cols-2 sm:grid-cols-3 gap-4 p-2 rounded-md" data-palabra="Salida"></div>
+                </div>
+
+                <!-- Items para Arrastrar -->
+                <div id="classification-items" class="w-full lg:w-64 order-first lg:order-none grid grid-cols-4 lg:grid-cols-2 gap-4 p-4 bg-gray-900/30 rounded-lg"></div>
+
+                <!-- Zona de Entrada -->
+                <div class="flex-1 bg-blue-900/50 rounded-lg p-4">
+                    <h3 class="text-2xl font-bold text-yellow-300 mb-4 border-b-2 border-yellow-300 pb-2">Periféricos de ENTRADA</h3>
+                    <div id="entrada-drop-zone" class="drop-zone min-h-[300px] h-full grid grid-cols-2 sm:grid-cols-3 gap-4 p-2 rounded-md" data-palabra="Entrada"></div>
+                </div>
+            </div>
+            <div class="mt-8 space-x-4">
+                <button data-target-scene="7" class="nav-btn btn-custom">Retroceder</button>
+            </div>
+        </div>
+
+        <!-- Escena 9: Conclusión -->
+        <div id="scene-9" class="scene-container hidden-scene flex-col text-center">
+            <svg class="w-24 h-24 text-yellow-400 mb-4"><use href="#svg-medalla"></use></svg>
+            <h1 class="text-4xl md:text-5xl mb-4">¡MISIÓN CUMPLIDA!</h1>
+            <p class="max-w-2xl text-lg md:text-xl mb-6">¡Lo lograste! ¡Venciste al Virus Juguetón y reparaste la computadora! Eres un verdadero genio de la computación.</p>
+            <h3 class="text-2xl font-bold text-yellow-300 mb-4">Repaso Final:</h3>
+            <div id="final-summary-grid" class="grid grid-cols-3 sm:grid-cols-5 gap-4 p-4 bg-blue-900/30 rounded-lg"></div>
+            <button id="restart-btn" class="btn-custom text-xl mt-8">Jugar de Nuevo</button>
+            <svg id="easter-egg-virus" class="cursor-pointer"><use href="#svg-virus"></use></svg>
+        </div>
+    </main>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -364,8 +273,6 @@
         // ===================================================================================
         // DEFINICIONES Y ESTADO GLOBAL
         // ===================================================================================
-
-        // Vocabulario central de la aplicación
         const VOCABULARIO = {
             'monitor': { group: 1, type: 'Salida', svg: '#svg-monitor' },
             'teclado': { group: 1, type: 'Entrada', svg: '#svg-teclado' },
@@ -378,8 +285,6 @@
             'escáner': { group: 3, type: 'Entrada', svg: '#svg-escaner' },
         };
         const PALABRAS = Object.keys(VOCABULARIO);
-
-        // Oraciones para el juego de aplicación
         const ORACIONES = [
             { text: "Con el ___ escribo letras y números.", answer: "teclado" },
             { text: "Veo mis dibujos y juegos en el ___.", answer: "monitor" },
@@ -389,184 +294,118 @@
             { text: "Hablo por el ___ para que mis amigos me escuchen.", answer: "micrófono" },
         ];
 
-        // Estado del juego
-        let currentScene = 1;
         let conceptosEscuchados = new Set();
         let progreso = 0;
-        let easterEggClicks = 0;
         
-        // Elementos del DOM
-        const escenas = document.querySelectorAll('.scene-container');
+        const gameContainer = document.getElementById('game-container');
         const header = document.getElementById('main-header');
         const progressBar = document.getElementById('progress-bar-fill');
         const progressText = document.getElementById('progress-text');
-
-        // Referencia a la API de Síntesis de Voz
         const synth = window.speechSynthesis;
         let voces;
-        // Intenta cargar las voces en español. A veces tardan en cargar.
+
+        // ===================================================================================
+        // FUNCIONES DE INICIALIZACIÓN Y AUXILIARES
+        // ===================================================================================
         function cargarVoces() {
             voces = synth.getVoices().filter(voice => voice.lang.startsWith('es'));
-            if (voces.length === 0) {
-                // Fallback a cualquier voz si no hay en español
-                voces = synth.getVoices();
-            }
-        }
-        cargarVoces();
-        if (synth.onvoiceschanged !== undefined) {
-            synth.onvoiceschanged = cargarVoces;
+            if (voces.length === 0) voces = synth.getVoices();
         }
 
-        // ===================================================================================
-        // FUNCIONES AUXILIARES
-        // ===================================================================================
-        
-        /**
-         * Cambia la escena visible.
-         * @param {number} numeroEscena - El número de la escena a mostrar.
-         */
-        function cambiarEscena(numeroEscena) {
-            window.scrollTo(0, 0); // Vuelve al inicio de la página
-            currentScene = numeroEscena;
-            escenas.forEach((escena, index) => {
-                if ((index + 1) === numeroEscena) {
-                    escena.classList.remove('hidden-scene');
-                } else {
-                    escena.classList.add('hidden-scene');
-                }
-            });
-            // Muestra u oculta la barra de progreso
-            if (numeroEscena >= 3 && numeroEscena <= 8) {
-                header.classList.remove('hidden');
-            } else {
-                header.classList.add('hidden');
-            }
-        }
-
-        /**
-         * Usa la API de Síntesis de Voz para decir un texto.
-         * @param {string} texto - El texto a pronunciar.
-         * @param {Function} [onEndCallback] - Una función a ejecutar cuando el habla termine.
-         */
         function hablar(texto, onEndCallback) {
-            // No cancelar si se quiere reproducir un sonido corto mientras habla (ej: feedback)
-            if (synth.speaking && texto.length > 5) { // Solo cancela si es un texto largo
-                synth.cancel();
-            }
+            if (synth.speaking) synth.cancel();
             const utterance = new SpeechSynthesisUtterance(texto);
             utterance.lang = 'es-ES';
-            if (voces && voces.length > 0) {
-                utterance.voice = voces[0];
-            }
-            utterance.rate = 0.9;
-
-            if (onEndCallback && typeof onEndCallback === 'function') {
-                utterance.onend = onEndCallback;
-            }
-
+            if (voces && voces.length > 0) utterance.voice = voces[0];
+            utterance.rate = 0.95;
+            if (onEndCallback) utterance.onend = onEndCallback;
             synth.speak(utterance);
         }
 
-        /**
-         * Reproduce un sonido de feedback.
-         * @param {boolean} correcto - True si la respuesta es correcta, false si es incorrecta.
-         */
         function feedbackSonoro(correcto) {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
-
+            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.4);
             if (correcto) {
                 oscillator.type = 'sine';
                 oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.5);
             } else {
                 oscillator.type = 'square';
                 oscillator.frequency.setValueAtTime(150, audioContext.currentTime);
-                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.3);
             }
             oscillator.start();
             oscillator.stop(audioContext.currentTime + 0.5);
         }
 
-        /**
-         * Baraja un array de forma aleatoria.
-         * @param {Array} array - El array a barajar.
-         * @returns {Array} El array barajado.
-         */
-        function barajarArray(array) {
-            return array.sort(() => Math.random() - 0.5);
-        }
+        const barajarArray = (array) => [...array].sort(() => Math.random() - 0.5);
 
-        /**
-         * Actualiza la barra de progreso.
-         * @param {number} conceptosRecuperados - El número de conceptos completados.
-         */
         function actualizarProgreso(conceptosRecuperados) {
             progreso = conceptosRecuperados;
-            const porcentaje = (progreso / PALABRAS.length) * 100;
+            const total = PALABRAS.length;
+            const porcentaje = (progreso / total) * 100;
             progressBar.style.width = `${porcentaje}%`;
-            progressText.textContent = `${progreso} / ${PALABRAS.length}`;
+            progressText.textContent = `${progreso} / ${total}`;
+            if (progreso >= total) {
+                setTimeout(() => { progressText.textContent = '¡Reparado!'; }, 800);
+            }
+        }
+
+        // ===================================================================================
+        // NAVEGACIÓN Y MANEJO DE ESCENAS
+        // ===================================================================================
+        function cambiarEscena(numeroEscena) {
+            const targetScene = document.getElementById(`scene-${numeroEscena}`);
+            if (!targetScene) return;
+
+            const initFunction = window[`inicializarEscena${numeroEscena}`];
+            if (typeof initFunction === 'function') {
+                initFunction();
+            }
+
+            document.querySelectorAll('.scene-container').forEach(scena => {
+                scena.classList.add('hidden-scene');
+            });
+            targetScene.classList.remove('hidden-scene');
+            
+            header.classList.toggle('hidden', numeroEscena < 3 || numeroEscena > 8);
         }
         
-        // ===================================================================================
-        // LÓGICA DE NAVEGACIÓN
-        // ===================================================================================
-        
-        document.getElementById('start-mission-btn').addEventListener('click', () => cambiarEscena(2));
-        document.getElementById('go-to-3').addEventListener('click', () => {
-            inicializarEscena3();
-            cambiarEscena(3);
+        gameContainer.addEventListener('click', (e) => {
+            const navButton = e.target.closest('.nav-btn');
+            if (navButton && !navButton.disabled) {
+                const targetScene = navButton.dataset.targetScene;
+                if (targetScene) {
+                    cambiarEscena(parseInt(targetScene, 10));
+                }
+            }
         });
-        document.getElementById('go-to-4').addEventListener('click', () => {
-            inicializarEscena4();
-            cambiarEscena(4);
-        });
-        
-        // Botones de retroceso
-        document.getElementById('back-to-1').addEventListener('click', () => cambiarEscena(1));
-        document.getElementById('back-to-2').addEventListener('click', () => cambiarEscena(2));
-        document.getElementById('back-to-3').addEventListener('click', () => cambiarEscena(3));
-        document.getElementById('back-to-4').addEventListener('click', () => cambiarEscena(4));
-        document.getElementById('back-to-5').addEventListener('click', () => cambiarEscena(5));
-        document.getElementById('back-to-6').addEventListener('click', () => cambiarEscena(6));
-        document.getElementById('back-to-7').addEventListener('click', () => cambiarEscena(7));
-        
-        document.getElementById('restart-btn').addEventListener('click', () => {
-            // Reinicia todo el estado del juego
-            progreso = 0;
-            actualizarProgreso(0);
-            conceptosEscuchados.clear();
-            easterEggClicks = 0;
-            document.getElementById('easter-egg-virus').style.transform = 'translateY(150%)';
-            cambiarEscena(1);
-        });
-        
+
         // ===================================================================================
-        // LÓGICA DE ESCENA 3: LABORATORIO DE COMPONENTES
+        // LÓGICA DE ESCENAS
         // ===================================================================================
 
-        function inicializarEscena3() {
+        window.inicializarEscena3 = function() {
             const grid = document.getElementById('concept-grid');
             const botonAvanzar = document.getElementById('go-to-4');
             grid.innerHTML = '';
+            botonAvanzar.disabled = true;
+            botonAvanzar.classList.remove('animate-pulse');
+            conceptosEscuchados.clear();
             
-            barajarArray([...PALABRAS]).forEach(palabra => {
+            barajarArray(PALABRAS).forEach(palabra => {
                 const item = document.createElement('div');
                 item.className = 'p-4 bg-blue-800/50 rounded-lg text-center cursor-pointer border-2 border-transparent hover:border-yellow-400 hover:bg-blue-700/50 transition-all';
-                item.dataset.palabra = palabra;
-                item.innerHTML = `
-                    <svg class="w-16 h-16 mx-auto mb-2"><use xlink:href="${VOCABULARIO[palabra].svg}"></use></svg>
-                    <span class="capitalize font-bold">${palabra}</span>
-                `;
+                item.innerHTML = `<svg class="w-16 h-16 mx-auto mb-2 pointer-events-none"><use href="${VOCABULARIO[palabra].svg}"></use></svg><span class="capitalize font-bold pointer-events-none">${palabra}</span>`;
                 item.addEventListener('click', () => {
                     hablar(palabra);
-                    conceptosEscuchados.add(palabra);
-                    item.style.borderColor = '#FFD700'; // Marca como escuchado
+                    if (!conceptosEscuchados.has(palabra)) {
+                        conceptosEscuchados.add(palabra);
+                        item.style.borderColor = '#FFD700';
+                    }
                     if (conceptosEscuchados.size === PALABRAS.length) {
                         botonAvanzar.disabled = false;
                         botonAvanzar.classList.add('animate-pulse');
@@ -575,563 +414,281 @@
                 grid.appendChild(item);
             });
         }
-        
-        // ===================================================================================
-        // LÓGICA DE ESCENA 4: MINIJUEGO 1 (AUDIO-VISUAL)
-        // ===================================================================================
-        
-        let palabrasJuego1;
-        let palabraActualJuego1;
 
-        function inicializarEscena4() {
-            palabrasJuego1 = barajarArray(PALABRAS.filter(p => VOCABULARIO[p].group === 1));
-            siguientePreguntaJuego1();
+        window.inicializarEscena4 = function() {
+            const gameData = {
+                palabras: barajarArray(PALABRAS.filter(p => VOCABULARIO[p].group === 1)),
+                targetDiv: document.getElementById('audio-game-target'),
+                optionsContainer: document.getElementById('audio-game-options')
+            };
+            siguientePreguntaJuego4(gameData);
         }
 
-        function siguientePreguntaJuego1() {
-            if (palabrasJuego1.length === 0) {
-                hablar("¡Genial! Recuperaste los primeros tres componentes.");
-                actualizarProgreso(3);
-                inicializarEscena5();
-                cambiarEscena(5);
+        function siguientePreguntaJuego4(gameData) {
+            if (gameData.palabras.length === 0) {
+                hablar("¡Genial! Recuperaste los primeros componentes.", () => {
+                    actualizarProgreso(3);
+                    cambiarEscena(5);
+                });
                 return;
             }
 
-            palabraActualJuego1 = palabrasJuego1.pop();
-            const targetDiv = document.getElementById('audio-game-target');
-            targetDiv.textContent = '...';
-            
+            const palabraActual = gameData.palabras.pop();
+            gameData.targetDiv.textContent = '...';
+            gameData.optionsContainer.innerHTML = '';
+            gameData.optionsContainer.classList.add('pointer-events-none-temp');
+
             setTimeout(() => {
-                hablar(palabraActualJuego1);
-                targetDiv.textContent = palabraActualJuego1.charAt(0).toUpperCase() + palabraActualJuego1.slice(1);
+                hablar(palabraActual, () => {
+                    gameData.optionsContainer.classList.remove('pointer-events-none-temp');
+                });
+                gameData.targetDiv.textContent = palabraActual.charAt(0).toUpperCase() + palabraActual.slice(1);
             }, 500);
 
-            const otrasOpciones = barajarArray(PALABRAS.filter(p => p !== palabraActualJuego1)).slice(0, 2);
-            const opciones = barajarArray([palabraActualJuego1, ...otrasOpciones]);
+            const opciones = barajarArray([palabraActual, ...barajarArray(PALABRAS.filter(p => p !== palabraActual)).slice(0, 2)]);
             
-            const optionsContainer = document.getElementById('audio-game-options');
-            optionsContainer.innerHTML = '';
-
             opciones.forEach(palabra => {
                 const option = document.createElement('div');
                 option.className = 'p-4 bg-blue-800/50 rounded-lg cursor-pointer border-4 border-transparent hover:border-yellow-400 transition-all';
-                option.dataset.palabra = palabra;
-                option.innerHTML = `<svg class="w-24 h-24 md:w-32 md:h-32"><use xlink:href="${VOCABULARIO[palabra].svg}"></use></svg>`;
-                
+                option.innerHTML = `<svg class="w-24 h-24 md:w-32 md:h-32 pointer-events-none"><use href="${VOCABULARIO[palabra].svg}"></use></svg>`;
                 option.addEventListener('click', () => {
-                    const esCorrecto = option.dataset.palabra === palabraActualJuego1;
+                    const esCorrecto = palabra === palabraActual;
                     feedbackSonoro(esCorrecto);
                     option.classList.add(esCorrecto ? 'correct-animation' : 'incorrect-animation');
+                    gameData.optionsContainer.classList.add('pointer-events-none-temp');
                     
                     if (esCorrecto) {
-                        setTimeout(siguientePreguntaJuego1, 1000);
+                        setTimeout(() => siguientePreguntaJuego4(gameData), 1200);
                     } else {
-                        setTimeout(() => option.classList.remove('incorrect-animation'), 500);
+                        setTimeout(() => {
+                            option.classList.remove('incorrect-animation');
+                            gameData.optionsContainer.classList.remove('pointer-events-none-temp');
+                        }, 800);
                     }
                 });
-                optionsContainer.appendChild(option);
+                gameData.optionsContainer.appendChild(option);
             });
         }
-
-        // ===================================================================================
-        // LÓGICA DE ESCENA 5: MINIJUEGO 2 (ARRASTRAR Y SOLTAR)
-        // ===================================================================================
-
-        let palabrasJuego2;
-        let correctasJuego2 = 0;
-        let elementoArrastrado = null;
-
-        function inicializarEscena5() {
-            correctasJuego2 = 0;
-            palabrasJuego2 = barajarArray(PALABRAS.filter(p => VOCABULARIO[p].group === 2));
+        
+        window.inicializarEscena5 = function() {
+            const palabrasJuego = PALABRAS.filter(p => VOCABULARIO[p].group === 2);
+            let correctas = 0;
             const wordsContainer = document.getElementById('drag-words');
             const imagesContainer = document.getElementById('drop-images');
             wordsContainer.innerHTML = '';
             imagesContainer.innerHTML = '';
 
-            // Crear las palabras arrastrables
-            barajarArray([...palabrasJuego2]).forEach(palabra => {
-                const wordDiv = document.createElement('div');
-                wordDiv.textContent = palabra.charAt(0).toUpperCase() + palabra.slice(1);
-                wordDiv.className = 'draggable p-3 bg-blue-600 rounded-md text-white font-bold text-center';
-                wordDiv.draggable = true;
-                wordDiv.dataset.palabra = palabra;
-                wordsContainer.appendChild(wordDiv);
+            barajarArray(palabrasJuego).forEach(palabra => {
+                wordsContainer.innerHTML += `<div class="draggable p-3 bg-blue-600 rounded-md text-white font-bold text-center" draggable="true" data-palabra="${palabra}">${palabra.charAt(0).toUpperCase() + palabra.slice(1)}</div>`;
             });
 
-            // Crear las zonas para soltar
-            palabrasJuego2.forEach(palabra => {
-                const dropZone = document.createElement('div');
-                dropZone.className = 'drop-zone w-full h-32 md:h-40 flex items-center justify-center bg-blue-900/50 rounded-lg';
-                dropZone.dataset.palabra = palabra;
-                dropZone.innerHTML = `<svg class="w-24 h-24 md:w-32 md:h-32 text-blue-300/50"><use xlink:href="${VOCABULARIO[palabra].svg}"></use></svg>`;
-                imagesContainer.appendChild(dropZone);
+            barajarArray(palabrasJuego).forEach(palabra => {
+                imagesContainer.innerHTML += `<div class="drop-zone w-full h-32 flex items-center justify-center bg-blue-900/50 rounded-lg" data-palabra="${palabra}"><svg class="w-24 h-24 text-blue-300/50 pointer-events-none"><use href="${VOCABULARIO[palabra].svg}"></use></svg></div>`;
             });
 
-            // Añadir manejadores de eventos
-            addDragAndDropListeners();
-        }
-
-        function addDragAndDropListeners() {
-            const draggables = document.querySelectorAll('#scene-5 .draggable');
-            const dropZones = document.querySelectorAll('#scene-5 .drop-zone');
-            
-            // Eventos para arrastrar en PC
-            draggables.forEach(draggable => {
-                draggable.addEventListener('dragstart', (e) => {
-                    elementoArrastrado = e.target;
-                    e.dataTransfer.setData('text/plain', e.target.dataset.palabra);
-                    setTimeout(() => e.target.classList.add('opacity-50'), 0);
-                });
-                draggable.addEventListener('dragend', (e) => {
-                    e.target.classList.remove('opacity-50');
-                    elementoArrastrado = null;
-                });
-            });
-            
-            // Eventos para soltar en PC
-            dropZones.forEach(zone => {
-                zone.addEventListener('dragover', e => {
-                    e.preventDefault();
-                    zone.classList.add('over');
-                });
-                zone.addEventListener('dragleave', () => zone.classList.remove('over'));
-                zone.addEventListener('drop', handleDrop);
-            });
-            
-            // --- LÓGICA PARA ARRASTRAR Y SOLTAR EN MÓVILES ---
-            let mobileDragElement = null; // Clon del elemento que se mueve
-            
-            draggables.forEach(draggable => {
-                draggable.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    elementoArrastrado = e.target;
-                    
-                    mobileDragElement = draggable.cloneNode(true);
-                    document.body.appendChild(mobileDragElement);
-                    mobileDragElement.style.position = 'absolute';
-                    mobileDragElement.style.zIndex = '1000';
-                    mobileDragElement.style.pointerEvents = 'none'; // No interfiere con el touchmove
-                    
-                    const touch = e.touches[0];
-                    moveElement(touch.clientX, touch.clientY);
-
-                }, { passive: false });
-            });
-            
-            document.addEventListener('touchmove', (e) => {
-                if (!elementoArrastrado || !mobileDragElement) return;
-                e.preventDefault();
-                const touch = e.touches[0];
-                moveElement(touch.clientX, touch.clientY);
-                
-                // Resaltar zona de drop
-                const targetZone = document.elementFromPoint(touch.clientX, touch.clientY);
-                dropZones.forEach(zone => {
-                    if (zone === targetZone || zone.contains(targetZone)) {
-                        zone.classList.add('over');
-                    } else {
-                        zone.classList.remove('over');
-                    }
-                });
-                
-            }, { passive: false });
-            
-            document.addEventListener('touchend', (e) => {
-                if (!elementoArrastrado || !mobileDragElement) return;
-                
-                const touch = e.changedTouches[0];
-                const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
-                
-                if (dropTarget) {
-                    // Simular un evento de drop para reutilizar la lógica
-                    const dropEvent = new Event('drop');
-                    dropEvent.target = dropTarget.closest('.drop-zone');
-                    dropEvent.dataTransfer = { getData: () => elementoArrastrado.dataset.palabra };
-                    if (dropEvent.target) {
-                        handleDrop(dropEvent);
-                    }
-                }
-                
-                // Limpieza
-                dropZones.forEach(zone => zone.classList.remove('over'));
-                document.body.removeChild(mobileDragElement);
-                mobileDragElement = null;
-                elementoArrastrado = null;
-            });
-            
-            function moveElement(x, y) {
-                if (mobileDragElement) {
-                   mobileDragElement.style.left = `${x - mobileDragElement.offsetWidth / 2}px`;
-                   mobileDragElement.style.top = `${y - mobileDragElement.offsetHeight / 2}px`;
-                }
-            }
-        }
-        
-        function handleDrop(e) {
-            e.preventDefault();
-            const dropZone = e.target.closest('.drop-zone');
-            if (!dropZone || dropZone.classList.contains('dropped')) return; // Ya tiene una palabra
-            
-            const palabraArrastrada = e.dataTransfer.getData('text/plain');
-            const esCorrecto = dropZone.dataset.palabra === palabraArrastrada;
-
-            feedbackSonoro(esCorrecto);
-            dropZone.classList.remove('over');
-
-            if (esCorrecto) {
-                dropZone.classList.add('dropped');
-                dropZone.innerHTML = `
-                    <svg class="w-20 h-20 text-yellow-400"><use xlink:href="${VOCABULARIO[palabraArrastrada].svg}"></use></svg>
-                    <span class="mt-2 text-white font-bold capitalize">${palabraArrastrada}</span>
-                `;
-                dropZone.classList.add('flex', 'flex-col', 'items-center', 'justify-center');
-                
-                // Ocultar el elemento arrastrado original
-                const originalDraggable = document.querySelector(`#drag-words .draggable[data-palabra="${palabraArrastrada}"]`);
-                if(originalDraggable) originalDraggable.style.display = 'none';
-
-                correctasJuego2++;
-                if (correctasJuego2 === palabrasJuego2.length) {
+            setupDragAndDrop('#scene-5', (dropZone, draggedElement) => {
+                const palabra = draggedElement.dataset.palabra;
+                dropZone.classList.add('dropped', 'flex', 'flex-col', 'items-center', 'justify-center');
+                dropZone.innerHTML = `<svg class="w-20 h-20 text-yellow-400 pointer-events-none"><use href="${VOCABULARIO[palabra].svg}"></use></svg><span class="mt-2 text-white font-bold capitalize pointer-events-none">${palabra}</span>`;
+                draggedElement.style.display = 'none';
+                correctas++;
+                if (correctas === palabrasJuego.length) {
                     setTimeout(() => {
-                        hablar("¡Muy bien! Ordenaste las etiquetas.");
-                        actualizarProgreso(6);
-                        inicializarEscena6();
-                        cambiarEscena(6);
+                        hablar("¡Muy bien! Ordenaste las etiquetas.", () => {
+                           actualizarProgreso(6);
+                           cambiarEscena(6);
+                        });
                     }, 1000);
                 }
-            } else {
-                dropZone.classList.add('incorrect-animation');
-                setTimeout(() => dropZone.classList.remove('incorrect-animation'), 500);
-            }
+            });
         }
 
-
-        // ===================================================================================
-        // LÓGICA DE ESCENA 6: MINIJUEGO 3 (ESCUCHA AVANZADA) - LÓGICA CORREGIDA
-        // ===================================================================================
-        
-        let palabrasJuego3;
-        let palabraActualJuego3;
-
-        function inicializarEscena6() {
-            palabrasJuego3 = barajarArray(PALABRAS.filter(p => VOCABULARIO[p].group === 3));
-            siguientePreguntaJuego6();
+        window.inicializarEscena6 = function() {
+            const gameData = {
+                palabras: barajarArray(PALABRAS.filter(p => VOCABULARIO[p].group === 3)),
+                instructionText: document.getElementById('instruction-juego6'),
+                imageContainer: document.getElementById('advanced-audio-image'),
+                optionsContainer: document.getElementById('advanced-audio-options')
+            };
+            siguientePreguntaJuego6(gameData);
         }
 
-        function siguientePreguntaJuego6() {
-            if (palabrasJuego3.length === 0) {
+        function siguientePreguntaJuego6(gameData) {
+             if (gameData.palabras.length === 0) {
                 hablar("¡Fantástico! Todos los componentes están identificados.", () => {
                     actualizarProgreso(9);
-                    inicializarEscena7();
                     cambiarEscena(7);
                 });
                 return;
             }
 
-            palabraActualJuego3 = palabrasJuego3.pop();
-            
+            const palabraActual = gameData.palabras.pop();
             let modoEscucha = true;
             let sonidosEscuchados = new Set();
-            const instructionText = document.getElementById('instruction-juego6');
-            const imageContainer = document.getElementById('advanced-audio-image');
-            const optionsContainer = document.getElementById('advanced-audio-options');
+            
+            gameData.instructionText.textContent = 'Primero, haz clic en cada opción para escuchar los sonidos.';
+            gameData.imageContainer.innerHTML = `<svg class="w-32 h-32 md:w-48 md:h-48"><use href="${VOCABULARIO[palabraActual].svg}"></use></svg>`;
+            gameData.optionsContainer.innerHTML = '';
+            gameData.optionsContainer.classList.remove('pointer-events-none-temp');
 
-            instructionText.textContent = 'Primero, haz clic en cada opción para escuchar los sonidos.';
-            imageContainer.innerHTML = `<svg class="w-32 h-32 md:w-48 md:h-48"><use xlink:href="${VOCABULARIO[palabraActualJuego3].svg}"></use></svg>`;
-            optionsContainer.innerHTML = '';
-
-            const otrasOpciones = barajarArray(PALABRAS.filter(p => p !== palabraActualJuego3)).slice(0, 2);
-            const opcionesAudio = barajarArray([palabraActualJuego3, ...otrasOpciones]);
+            const opcionesAudio = barajarArray([palabraActual, ...barajarArray(PALABRAS.filter(p => p !== palabraActual)).slice(0, 2)]);
             
             opcionesAudio.forEach((palabra, index) => {
                 const btn = document.createElement('button');
                 btn.className = 'btn-custom text-lg';
-                btn.textContent = `Opción ${index + 1}`;
-                btn.dataset.palabra = palabra;
+                btn.textContent = `Escuchar Opción ${index + 1}`;
                 
                 btn.addEventListener('click', () => {
-                    if (synth.speaking) return;
+                    if (gameData.optionsContainer.classList.contains('pointer-events-none-temp')) return;
 
                     if (modoEscucha) {
-                        sonidosEscuchados.add(palabra);
-                        btn.style.borderColor = '#FBBF24';
-
-                        let callback = null;
-                        if (sonidosEscuchados.size === 3) {
-                            callback = () => {
-                                modoEscucha = false;
-                                instructionText.textContent = '¡Bien! Ahora, haz clic en la opción que crees correcta.';
-                                hablar('Ahora, selecciona la respuesta correcta.');
-                            };
+                        gameData.optionsContainer.classList.add('pointer-events-none-temp');
+                        if (!sonidosEscuchados.has(palabra)) {
+                            sonidosEscuchados.add(palabra);
+                            btn.style.borderColor = '#FBBF24';
+                            btn.classList.add('opacity-75');
                         }
-                        hablar(palabra, callback);
 
+                        hablar(palabra, () => {
+                            if (sonidosEscuchados.size === 3) {
+                                modoEscucha = false;
+                                gameData.instructionText.textContent = '¡Bien! Ahora, haz clic en la opción que crees correcta.';
+                                gameData.optionsContainer.querySelectorAll('button').forEach((b, i) => {
+                                    b.textContent = `Seleccionar Opción ${i + 1}`;
+                                    b.classList.remove('opacity-75');
+                                });
+                                hablar('Ahora, selecciona la respuesta correcta.', () => {
+                                    gameData.optionsContainer.classList.remove('pointer-events-none-temp');
+                                });
+                            } else {
+                                gameData.optionsContainer.classList.remove('pointer-events-none-temp');
+                            }
+                        });
                     } else {
-                        const esCorrecto = btn.dataset.palabra === palabraActualJuego3;
+                        gameData.optionsContainer.classList.add('pointer-events-none-temp');
+                        const esCorrecto = palabra === palabraActual;
                         feedbackSonoro(esCorrecto);
                         btn.classList.add(esCorrecto ? 'correct-animation' : 'incorrect-animation');
                         
-                        optionsContainer.querySelectorAll('button').forEach(b => b.disabled = true);
-
                         if (esCorrecto) {
-                            setTimeout(siguientePreguntaJuego6, 1500);
+                            setTimeout(() => siguientePreguntaJuego6(gameData), 1500);
                         } else {
-                            setTimeout(() => {
+                            hablar('Ese no es. Inténtalo de nuevo.', () => {
                                 btn.classList.remove('incorrect-animation');
-                                optionsContainer.querySelectorAll('button').forEach(b => {
-                                    b.disabled = false;
-                                    b.style.borderColor = '#FFD700';
-                                });
-                                modoEscucha = true;
-                                sonidosEscuchados.clear();
-                                instructionText.textContent = 'Inténtalo de nuevo. Escucha y selecciona.';
-                                hablar('Inténtalo de nuevo');
-                            }, 1500);
+                                gameData.optionsContainer.classList.remove('pointer-events-none-temp');
+                            });
                         }
                     }
                 });
-                optionsContainer.appendChild(btn);
+                gameData.optionsContainer.appendChild(btn);
             });
         }
         
-        // ===================================================================================
-        // LÓGICA DE ESCENA 7: MINIJUEGO 4 (ORACIONES)
-        // ===================================================================================
-
-        let oracionesJuego7;
-        let oracionActualJuego7;
-
-        function inicializarEscena7() {
-            oracionesJuego7 = barajarArray([...ORACIONES]);
-            siguientePreguntaJuego7();
+        window.inicializarEscena7 = function() {
+            const gameData = {
+                oraciones: barajarArray([...ORACIONES]),
+                sentenceContainer: document.getElementById('sentence-container'),
+                dropZone: document.getElementById('sentence-drop-zone'),
+                wordOptions: document.getElementById('sentence-word-options')
+            };
+            siguientePreguntaJuego7(gameData);
         }
 
-        function siguientePreguntaJuego7() {
-            if (oracionesJuego7.length === 0) {
-                hablar("¡Eres un experto! Has conectado todas las ideas.", () => {
-                    inicializarEscena8();
-                    cambiarEscena(8);
-                });
+        function siguientePreguntaJuego7(gameData) {
+            if (gameData.oraciones.length === 0) {
+                hablar("¡Eres un experto! Has conectado todas las ideas.", () => cambiarEscena(8));
                 return;
             }
+            const oracionActual = gameData.oraciones.pop();
+            const { sentenceContainer, dropZone, wordOptions } = gameData;
 
-            oracionActualJuego7 = oracionesJuego7.pop();
-            const sentenceContainer = document.getElementById('sentence-container');
-            const dropZone = document.getElementById('sentence-drop-zone');
-            const wordOptions = document.getElementById('sentence-word-options');
-
-            sentenceContainer.textContent = oracionActualJuego7.text.replace('___', '______');
-            dropZone.innerHTML = 'Arrastra la palabra aquí';
-            dropZone.className = 'my-4 p-6 border-4 border-dashed border-blue-300/50 rounded-lg min-h-[80px] w-80 text-center text-gray-400'; // Reset class
+            sentenceContainer.dataset.currentSentenceText = oracionActual.text;
+            sentenceContainer.textContent = oracionActual.text.replace('___', '______');
+            
+            const newDropZone = dropZone.cloneNode(true);
+            newDropZone.innerHTML = 'Arrastra la palabra aquí';
+            newDropZone.className = 'drop-zone my-4 p-6 border-4 border-dashed border-blue-300/50 rounded-lg min-h-[80px] w-80 text-center text-gray-400';
+            dropZone.parentNode.replaceChild(newDropZone, dropZone);
+            gameData.dropZone = newDropZone;
+            newDropZone.dataset.palabra = oracionActual.answer;
+            
             wordOptions.innerHTML = '';
 
-            const respuestaCorrecta = oracionActualJuego7.answer;
-            const palabrasGrupo1y2 = PALABRAS.filter(p => VOCABULARIO[p].group <= 2);
-            const opcionesFalsas = barajarArray(palabrasGrupo1y2.filter(p => p !== respuestaCorrecta)).slice(0, 3);
-            const opciones = barajarArray([respuestaCorrecta, ...opcionesFalsas]);
-
+            const opciones = barajarArray([oracionActual.answer, ...barajarArray(PALABRAS.filter(p => VOCABULARIO[p].group <= 2 && p !== oracionActual.answer)).slice(0, 3)]);
             opciones.forEach(palabra => {
-                const wordDiv = document.createElement('div');
-                wordDiv.textContent = palabra.charAt(0).toUpperCase() + palabra.slice(1);
-                wordDiv.className = 'draggable p-3 bg-blue-600 rounded-md text-white font-bold cursor-grab';
-                wordDiv.draggable = true;
-                wordDiv.dataset.palabra = palabra;
-                wordOptions.appendChild(wordDiv);
+                wordOptions.innerHTML += `<div class="draggable p-3 bg-blue-600 rounded-md text-white font-bold" draggable="true" data-palabra="${palabra}">${palabra.charAt(0).toUpperCase() + palabra.slice(1)}</div>`;
             });
             
-            addSentenceDragDropListeners();
-        }
-
-        function addSentenceDragDropListeners() {
-            const draggables = document.querySelectorAll('#scene-7 .draggable');
-            const dropZone = document.getElementById('sentence-drop-zone');
-            let elementoArrastrado7 = null;
-            let mobileDragElement7 = null;
-
-            draggables.forEach(draggable => {
-                draggable.addEventListener('dragstart', e => {
-                    e.dataTransfer.setData('text/plain', e.target.dataset.palabra);
-                });
-                // Eventos Touch
-                draggable.addEventListener('touchstart', e => {
-                    e.preventDefault();
-                    elementoArrastrado7 = e.target;
-                    mobileDragElement7 = e.target.cloneNode(true);
-                    document.body.appendChild(mobileDragElement7);
-                    mobileDragElement7.style.position = 'absolute';
-                    mobileDragElement7.style.zIndex = '1000';
-                    mobileDragElement7.style.pointerEvents = 'none';
-                    move(e.touches[0]);
-                }, { passive: false });
-            });
-
-            document.addEventListener('touchmove', e => {
-                if (!elementoArrastrado7) return;
-                e.preventDefault();
-                move(e.touches[0]);
-                const targetZone = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-                if (targetZone.id === 'sentence-drop-zone') {
-                    dropZone.classList.add('over');
-                } else {
-                    dropZone.classList.remove('over');
-                }
-            }, { passive: false });
-
-            document.addEventListener('touchend', e => {
-                if (!elementoArrastrado7) return;
-                const touch = e.changedTouches[0];
-                const target = document.elementFromPoint(touch.clientX, touch.clientY);
-                if (target && target.id === 'sentence-drop-zone') {
-                    handleSentenceDrop(target, elementoArrastrado7.dataset.palabra);
-                }
-                document.body.removeChild(mobileDragElement7);
-                elementoArrastrado7 = null;
-                mobileDragElement7 = null;
-                dropZone.classList.remove('over');
-            });
-            
-            function move(touch) {
-                mobileDragElement7.style.left = `${touch.clientX - mobileDragElement7.offsetWidth / 2}px`;
-                mobileDragElement7.style.top = `${touch.clientY - mobileDragElement7.offsetHeight / 2}px`;
-            }
-
-            dropZone.addEventListener('dragover', e => {
-                e.preventDefault();
-                dropZone.classList.add('over');
-            });
-
-            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
-
-            dropZone.addEventListener('drop', e => {
-                e.preventDefault();
-                handleSentenceDrop(dropZone, e.dataTransfer.getData('text/plain'));
-            });
-        }
-        
-        function handleSentenceDrop(dropZone, palabra) {
-            const esCorrecto = palabra === oracionActualJuego7.answer;
-            feedbackSonoro(esCorrecto);
-            dropZone.classList.remove('over');
-
-            if (esCorrecto) {
-                const sentenceContainer = document.getElementById('sentence-container');
+            setupDragAndDrop('#scene-7', (dz, draggedElement) => {
+                const palabra = draggedElement.dataset.palabra;
+                const currentSentenceText = sentenceContainer.dataset.currentSentenceText;
                 const palabraCapitalizada = palabra.charAt(0).toUpperCase() + palabra.slice(1);
-                sentenceContainer.innerHTML = oracionActualJuego7.text.replace('___', `<strong class="text-yellow-300">${palabraCapitalizada}</strong>`);
-                dropZone.innerHTML = '¡Correcto!';
-                dropZone.className += ' border-green-500 bg-green-900/50 text-white';
-                document.getElementById('sentence-word-options').innerHTML = ''; // Limpiar opciones
-                setTimeout(siguientePreguntaJuego7, 2000);
-            } else {
-                dropZone.classList.add('incorrect-animation');
-                setTimeout(() => dropZone.classList.remove('incorrect-animation'), 500);
-            }
-        }
-        
-        // ===================================================================================
-        // LÓGICA DE ESCENA 8: MINIJUEGO 5 (DESFILE)
-        // ===================================================================================
-        
-        let palabrasJuego8;
-        let palabraActualJuego8;
-        let velocidadDesfile = 15; // en segundos
-        let desfileIntervalo;
-
-        function inicializarEscena8() {
-            palabrasJuego8 = barajarArray([...PALABRAS]);
-            siguientePreguntaJuego8();
-        }
-
-        function siguientePreguntaJuego8() {
-            if (palabrasJuego8.length === 0) {
-                hablar("¡VICTORIA! ¡Has superado el desafío final!", () => {
-                    clearInterval(desfileIntervalo);
-                    mostrarConclusion();
-                });
-                return;
-            }
-
-            palabraActualJuego8 = palabrasJuego8.pop();
-            document.getElementById('parade-target-name').textContent = palabraActualJuego8.charAt(0).toUpperCase() + palabraActualJuego8.slice(1);
-            
-            iniciarDesfile();
-        }
-
-        function iniciarDesfile() {
-            const area = document.getElementById('parade-area');
-            area.innerHTML = '';
-            
-            // Limpia cualquier intervalo anterior
-            if(desfileIntervalo) clearInterval(desfileIntervalo);
-            
-            // Crea los elementos que desfilan a intervalos
-            desfileIntervalo = setInterval(() => {
-                const palabraRandom = PALABRAS[Math.floor(Math.random() * PALABRAS.length)];
-                const item = document.createElement('div');
-                item.className = 'parade-item cursor-pointer';
-                item.style.top = `${Math.random() * 80}%`;
-                item.style.animationDuration = `${velocidadDesfile}s`;
-                // Añade un delay aleatorio para que no aparezcan todos juntos
-                item.style.animationDelay = `${Math.random() * (velocidadDesfile / 2)}s`;
-                item.innerHTML = `<svg class="w-16 h-16 md:w-20 md:h-20 hover:scale-125 transition-transform"><use xlink:href="${VOCABULARIO[palabraRandom].svg}"></use></svg>`;
-                
-                item.addEventListener('click', () => {
-                    const esCorrecto = palabraRandom === palabraActualJuego8;
-                    feedbackSonoro(esCorrecto);
-                    if (esCorrecto) {
-                        item.innerHTML = `<svg class="w-20 h-20 text-green-400"><use xlink:href="${VOCABULARIO[palabraRandom].svg}"></use></svg>`;
-                        // Aumenta la velocidad para el siguiente
-                        velocidadDesfile = Math.max(5, velocidadDesfile - 1);
-                        clearInterval(desfileIntervalo); // Detiene el desfile actual
-                        setTimeout(siguientePreguntaJuego8, 500);
-                    } else {
-                        item.classList.add('incorrect-animation');
-                        setTimeout(() => item.classList.remove('incorrect-animation'), 400);
-                    }
-                });
-                area.appendChild(item);
-
-                // Elimina el elemento cuando sale de la pantalla para no sobrecargar el DOM
-                setTimeout(() => {
-                    if (item.parentNode) {
-                        item.parentNode.removeChild(item);
-                    }
-                }, velocidadDesfile * 1000 + 2000);
-
-            }, 800); // Frecuencia con la que aparece un nuevo elemento
-        }
-
-        // ===================================================================================
-        // LÓGICA DE ESCENA 9: CONCLUSIÓN
-        // ===================================================================================
-        
-        function mostrarConclusion() {
-            cambiarEscena(9);
-            hablar("¡Misión cumplida! ¡Lo lograste! ¡Eres un genio de la computación!");
-            
-            // Lluvia de confeti con colores del tema
-            confetti({
-                particleCount: 200,
-                spread: 90,
-                origin: { y: 0.6 },
-                colors: ['#FFD700', '#FBBF24', '#3b82f6', '#ffffff']
+                sentenceContainer.innerHTML = currentSentenceText.replace('___', `<strong class="text-yellow-300">${palabraCapitalizada}</strong>`);
+                dz.innerHTML = '¡Correcto!';
+                dz.classList.add('dropped', 'border-green-500', 'bg-green-900/50', 'text-white');
+                wordOptions.innerHTML = '';
+                setTimeout(() => siguientePreguntaJuego7(gameData), 2000);
             });
+        }
+
+        window.inicializarEscena8 = function() {
+            const classificationItemsContainer = document.getElementById('classification-items');
+            const entradaZone = document.getElementById('entrada-drop-zone');
+            const salidaZone = document.getElementById('salida-drop-zone');
+
+            classificationItemsContainer.innerHTML = '';
+            entradaZone.innerHTML = '';
+            salidaZone.innerHTML = '';
             
-            // Llenar el resumen final
+            const perifericos = PALABRAS.filter(p => VOCABULARIO[p].type !== 'Mixto');
+            let correctas = 0;
+            const totalItems = perifericos.length;
+
+            barajarArray(perifericos).forEach(palabra => {
+                const item = document.createElement('div');
+                item.className = 'draggable p-2 bg-blue-600 rounded-md cursor-grab flex items-center justify-center h-24';
+                item.draggable = true;
+                item.dataset.palabra = VOCABULARIO[palabra].type; // The "answer" is the type
+                item.dataset.nombre = palabra; // Keep the name for the image
+                item.innerHTML = `<svg class="w-16 h-16 text-white pointer-events-none"><use href="${VOCABULARIO[palabra].svg}"></use></svg>`;
+                classificationItemsContainer.appendChild(item);
+            });
+
+            setupDragAndDrop('#scene-8', (dropZone, draggedElement) => {
+                const nombrePeriferico = draggedElement.dataset.nombre;
+                
+                const staticItem = document.createElement('div');
+                staticItem.className = 'p-2 bg-blue-800/50 rounded-lg flex flex-col items-center justify-center text-center';
+                staticItem.innerHTML = `
+                    <svg class="w-12 h-12 text-yellow-300"><use href="${VOCABULARIO[nombrePeriferico].svg}"></use></svg>
+                    <span class="text-xs mt-1 capitalize">${nombrePeriferico}</span>
+                `;
+                dropZone.appendChild(staticItem);
+
+                draggedElement.classList.add('hidden');
+                
+                correctas++;
+                if (correctas === totalItems) {
+                    setTimeout(() => {
+                        hablar("¡Excelente! Has clasificado todos los periféricos.", () => {
+                           cambiarEscena(9);
+                        });
+                    }, 1000);
+                }
+            });
+        }
+        
+        window.inicializarEscena9 = function() {
+            hablar("¡Misión cumplida! ¡Lo lograste!");
+            confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 }, colors: ['#FFD700', '#FBBF24', '#3b82f6', '#ffffff'] });
+            
             const grid = document.getElementById('final-summary-grid');
             grid.innerHTML = '';
             PALABRAS.forEach(palabra => {
-                const item = document.createElement('div');
-                item.className = 'flex flex-col items-center p-2 bg-blue-800/50 rounded-lg';
-                item.innerHTML = `
-                    <svg class="w-12 h-12 mx-auto mb-1"><use xlink:href="${VOCABULARIO[palabra].svg}"></use></svg>
-                    <span class="text-xs md:text-sm capitalize font-bold">${palabra}</span>
-                `;
-                grid.appendChild(item);
+                grid.innerHTML += `<div class="flex flex-col items-center p-2 bg-blue-800/50 rounded-lg"><svg class="w-12 h-12 mx-auto mb-1"><use href="${VOCABULARIO[palabra].svg}"></use></svg><span class="text-xs md:text-sm capitalize font-bold">${palabra}</span></div>`;
             });
-
-            // Huevo de pascua
-            document.getElementById('easter-egg-virus').addEventListener('click', () => {
+            let easterEggClicks = 0;
+            document.getElementById('easter-egg-virus').onclick = () => {
                 easterEggClicks++;
                 if (easterEggClicks >= 3) {
                     const virus = document.getElementById('easter-egg-virus');
@@ -1139,9 +696,114 @@
                     hablar("ups");
                     setTimeout(() => {
                         virus.style.transform = 'translateY(150%)';
-                        easterEggClicks = 0; // Reset
+                        easterEggClicks = 0;
                     }, 2000);
                 }
+            };
+        }
+
+        // Botón de reinicio
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            progreso = 0;
+            actualizarProgreso(0);
+            synth.cancel();
+            cambiarEscena(1);
+        });
+
+        // ===================================================================================
+        // INICIO DEL JUEGO
+        // ===================================================================================
+        cargarVoces();
+        if (synth.onvoiceschanged !== undefined) {
+            synth.onvoiceschanged = cargarVoces;
+        }
+        cambiarEscena(1);
+
+        // Lógica para Drag and Drop genérica
+        function setupDragAndDrop(sceneSelector, onCorrectDrop) {
+            const scene = document.querySelector(sceneSelector);
+            if (!scene) return;
+            const draggables = scene.querySelectorAll('.draggable');
+            const dropZones = scene.querySelectorAll('.drop-zone');
+            let currentDraggedElement = null;
+
+            function handleDrop(dropZone, draggedElement) {
+                if (!draggedElement) return;
+                const palabraArrastrada = draggedElement.dataset.palabra;
+                const esCorrecto = dropZone.dataset.palabra === palabraArrastrada;
+                
+                feedbackSonoro(esCorrecto);
+                if (esCorrecto) {
+                    onCorrectDrop(dropZone, draggedElement);
+                } else {
+                    dropZone.classList.add('incorrect-animation');
+                    setTimeout(() => dropZone.classList.remove('incorrect-animation'), 500);
+                }
+            }
+            draggables.forEach(draggable => {
+                draggable.addEventListener('dragstart', (e) => {
+                    draggable.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', draggable.dataset.palabra);
+                    currentDraggedElement = draggable;
+                });
+                draggable.addEventListener('dragend', () => {
+                    draggable.classList.remove('dragging');
+                    currentDraggedElement = null;
+                });
+                draggable.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    currentDraggedElement = draggable;
+                    currentDraggedElement.classList.add('dragging');
+                    document.addEventListener('touchmove', onTouchMove, { passive: false });
+                    document.addEventListener('touchend', onTouchEnd);
+                }, { passive: false });
+            });
+            function onTouchMove(e) {
+                if (!currentDraggedElement) return; e.preventDefault();
+                const touch = e.touches[0];
+                const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+                dropZones.forEach(zone => {
+                    const isOver = zone === elementUnder?.closest('.drop-zone');
+                    const canHighlight = scene.id === 'scene-8' ? isOver : (isOver && !zone.classList.contains('dropped'));
+                    zone.classList.toggle('over', canHighlight);
+                });
+            }
+            function onTouchEnd(e) {
+                if (!currentDraggedElement) return;
+                const touch = e.changedTouches[0];
+                const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY);
+                const dropZoneUnder = elementUnder?.closest('.drop-zone');
+                
+                const canDrop = scene.id === 'scene-8' ? dropZoneUnder : (dropZoneUnder && !dropZoneUnder.classList.contains('dropped'));
+                if (canDrop) {
+                    handleDrop(dropZoneUnder, currentDraggedElement);
+                }
+                
+                dropZones.forEach(zone => zone.classList.remove('over'));
+                if (currentDraggedElement) {
+                    currentDraggedElement.classList.remove('dragging');
+                }
+                currentDraggedElement = null;
+                document.removeEventListener('touchmove', onTouchMove);
+                document.removeEventListener('touchend', onTouchEnd);
+            }
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    const canHighlight = scene.id === 'scene-8' ? true : !zone.classList.contains('dropped');
+                    if (canHighlight) {
+                        zone.classList.add('over');
+                    }
+                });
+                zone.addEventListener('dragleave', () => zone.classList.remove('over'));
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const canDrop = scene.id === 'scene-8' ? true : !zone.classList.contains('dropped');
+                    if (!canDrop) return;
+                    
+                    zone.classList.remove('over');
+                    handleDrop(zone, currentDraggedElement);
+                });
             });
         }
     });
